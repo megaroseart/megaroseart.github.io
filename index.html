@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Megarose - Gaming NFTs</title>
+    
+    <!-- Firebase SDK (compat) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
+    <!-- ========== STYLESHEET ========== -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #1A1A1A;
+            font-family: 'Courier New', 'Fira Code', monospace;
+            color: #FFFFFF;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        :root {
+            --primary-dark: #1A1A1A;
+            --secondary-gray: #D1D1D1;
+            --pure-white: #FFFFFF;
+            --primary-blue: #2D54B2;
+            --soft-green: #BDC9B8;
+            --light-blue: #A5C4F7;
+            --deep-blue: #4A627A;
+            --accent-red: #A63A5E;
+            --terminal-green: #00ff00;
+            --terminal-blue: #569cd6;
+            --terminal-yellow: #ffff00;
+            --terminal-purple: #c586c0;
+        }
+
+        /* Navbar */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 5%;
+            background: rgba(26, 26, 26, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .logo-img {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary-blue);
+            box-shadow: 0 0 20px rgba(45, 84, 178, 0.3);
+        }
+
+        .logo-text {
+            font-size: 1.3rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--pure-white), var(--soft-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropbtn {
+            background: linear-gradient(135deg, var(--primary-blue), var(--deep-blue));
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.3s;
+        }
+
+        .dropbtn:hover {
+            transform: scale(1.05);
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background: rgba(26, 26, 26, 0.95);
+            backdrop-filter: blur(10px);
+            min-width: 200px;
+            border-radius: 12px;
+            padding: 0.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .dropdown-content a {
+            color: var(--secondary-gray);
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .dropdown-content a:hover {
+            background: rgba(45, 84, 178, 0.2);
+            color: var(--light-blue);
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        /* Hero Section */
+        .hero {
+            margin-top: 100px;
+            text-align: center;
+            padding: 3rem 5%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        .title {
+            font-size: 5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--pure-white), var(--light-blue), var(--soft-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+            letter-spacing: -2px;
+        }
+
+        .slogan {
+            font-size: 1.5rem;
+            color: var(--secondary-gray);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Gallery */
+        .gallery {
+            padding: 3rem 5%;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .gallery-track {
+            display: flex;
+            gap: 1rem;
+            animation: scroll 50s linear infinite;
+            width: max-content;
+        }
+
+        .gallery:hover .gallery-track {
+            animation-play-state: paused;
+        }
+
+        @keyframes scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        .nft-card {
+            width: 180px;
+            height: 180px;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+
+        .nft-card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #FFD700, #FFA500, #FFD700);
+            border-radius: 17px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: -1;
+        }
+
+        .nft-card:hover::before {
+            opacity: 1;
+        }
+
+        .nft-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transform: skewX(-25deg);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            100% { left: 200%; }
+        }
+
+        .nft-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+
+        .nft-card:hover img {
+            transform: scale(1.1);
+        }
+
+        .card-glow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.2), transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .nft-card:hover .card-glow {
+            opacity: 1;
+        }
+
+        /* Join Whitelist Button */
+        .join-wl {
+            text-align: center;
+            margin: 3rem 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        .join-wl-btn {
+            background: linear-gradient(135deg, var(--primary-blue), var(--accent-red));
+            color: white;
+            border: none;
+            padding: 18px 48px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 0 30px rgba(45, 84, 178, 0.3);
+        }
+
+        .join-wl-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 40px rgba(166, 58, 94, 0.4);
+        }
+
+        /* Terminal Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .terminal {
+            background: #0a0a0a;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 700px;
+            border: 2px solid var(--primary-blue);
+            box-shadow: 0 0 30px rgba(45, 84, 178, 0.3);
+            overflow: hidden;
+            animation: terminalGlow 2s infinite;
+        }
+
+        @keyframes terminalGlow {
+            0% { box-shadow: 0 0 20px rgba(45, 84, 178, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(166, 58, 94, 0.3); }
+            100% { box-shadow: 0 0 20px rgba(45, 84, 178, 0.3); }
+        }
+
+        .terminal-header {
+            background: #1a1a1a;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid #333;
+        }
+
+        .terminal-dots {
+            display: flex;
+            gap: 8px;
+        }
+
+        .terminal-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+        }
+
+        .dot-red { background: #ff5f56; }
+        .dot-yellow { background: #ffbd2e; }
+        .dot-green { background: #27c93f; }
+
+        .terminal-title {
+            color: #888;
+            font-size: 0.9rem;
+            margin-left: 10px;
+        }
+
+        .terminal-close {
+            margin-left: auto;
+            color: #888;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: color 0.3s;
+        }
+
+        .terminal-close:hover {
+            color: var(--accent-red);
+        }
+
+        .terminal-body {
+            padding: 25px;
+            min-height: 400px;
+            max-height: 70vh;
+            overflow-y: auto;
+            font-family: 'Courier New', 'Fira Code', monospace;
+        }
+
+        .terminal-line {
+            margin-bottom: 15px;
+            color: var(--soft-green);
+            line-height: 1.5;
+        }
+
+        .terminal-prompt {
+            color: var(--terminal-green);
+            margin-right: 10px;
+        }
+
+        .terminal-command {
+            color: var(--terminal-blue);
+        }
+
+        .terminal-output {
+            color: #fff;
+            margin-left: 20px;
+            margin-top: 5px;
+            padding: 5px 0;
+        }
+
+        .terminal-success {
+            color: var(--terminal-green);
+        }
+
+        .terminal-error {
+            color: var(--accent-red);
+        }
+
+        .terminal-info {
+            color: var(--terminal-yellow);
+        }
+
+        .terminal-input-area {
+            margin-top: 20px;
+            border-top: 1px solid #333;
+            padding-top: 20px;
+        }
+
+        .terminal-input-line {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #1a1a1a;
+            padding: 10px 15px;
+            border-radius: 8px;
+        }
+
+        .terminal-input-prompt {
+            color: var(--terminal-green);
+            font-weight: bold;
+        }
+
+        .terminal-input-field {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            flex: 1;
+            outline: none;
+        }
+
+        .terminal-input-field::placeholder {
+            color: #444;
+        }
+
+        .terminal-cursor {
+            display: inline-block;
+            width: 10px;
+            height: 20px;
+            background: var(--terminal-green);
+            animation: blink 1s infinite;
+            margin-left: 2px;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        .terminal-progress {
+            margin-top: 15px;
+            padding: 10px;
+            background: #1a1a1a;
+            border-radius: 5px;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: #333;
+            border-radius: 2px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-blue), var(--accent-red));
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .terminal-button {
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 15px;
+        }
+
+        .terminal-button:hover {
+            background: var(--accent-red);
+            transform: translateY(-2px);
+        }
+
+        .terminal-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Collection Details */
+        .collection-details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            padding: 4rem 5%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        .detail-card {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s;
+        }
+
+        .detail-card:hover {
+            border-color: var(--primary-blue);
+            transform: translateY(-5px);
+        }
+
+        .detail-title {
+            color: var(--light-blue);
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            letter-spacing: 1px;
+        }
+
+        .detail-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--pure-white), var(--soft-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* FAQ Section */
+        .faq-section {
+            padding: 4rem 5%;
+            background: rgba(0, 0, 0, 0.2);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        .faq-title {
+            text-align: center;
+            font-size: 3rem;
+            margin-bottom: 3rem;
+            background: linear-gradient(135deg, var(--pure-white), var(--primary-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .faq-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            margin-bottom: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .faq-item:hover {
+            border-color: var(--accent-red);
+        }
+
+        .faq-question {
+            padding: 1.2rem 1.5rem;
+            background: rgba(255, 255, 255, 0.02);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            color: var(--secondary-gray);
+            transition: all 0.3s;
+        }
+
+        .faq-question:hover {
+            background: rgba(45, 84, 178, 0.1);
+            color: var(--light-blue);
+        }
+
+        .faq-question .arrow {
+            font-size: 1.2rem;
+            transition: transform 0.3s;
+            color: var(--primary-blue);
+        }
+
+        .faq-item.active .faq-question .arrow {
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease-in-out;
+            background: rgba(0, 0, 0, 0.2);
+            color: var(--soft-green);
+        }
+
+        .faq-item.active .faq-answer {
+            padding: 1.2rem 1.5rem;
+            max-height: 200px;
+        }
+
+        /* Portal Section */
+        .portal-section {
+            padding: 3rem 5%;
+            text-align: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        .portal-container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, rgba(45, 84, 178, 0.1), rgba(166, 58, 94, 0.1));
+            padding: 1.5rem;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .portal-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(transparent, rgba(45, 84, 178, 0.2), transparent, rgba(166, 58, 94, 0.2));
+            animation: rotate 4s linear infinite;
+        }
+
+        @keyframes rotate {
+            100% { transform: rotate(360deg); }
+        }
+
+        .portal-content {
+            position: relative;
+            background: var(--primary-dark);
+            padding: 1.5rem;
+            border-radius: 20px;
+            z-index: 1;
+        }
+
+        .portal-title {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            color: var(--light-blue);
+        }
+
+        .portal-status {
+            font-size: 1.1rem;
+            color: var(--soft-green);
+            margin-bottom: 0.5rem;
+        }
+
+        .portal-message {
+            color: var(--pure-white);
+            font-size: 0.9rem;
+            background: rgba(45, 84, 178, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        @media (max-width: 768px) {
+            .title {
+                font-size: 3rem;
+            }
+            
+            .collection-details {
+                grid-template-columns: 1fr;
+            }
+            
+            .terminal-body {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="logo">
+            <img src="https://iili.io/qBBDknR.png" alt="Megarose Logo" class="logo-img">
+            <span class="logo-text">Mega Rose</span>
+        </div>
+        
+        <div class="dropdown">
+            <button class="dropbtn">Menu ▼</button>
+            <div class="dropdown-content">
+                <a href="#home">Home</a>
+                <a href="#megarose">Megarose</a>
+                <a href="#x">X (Twitter)</a>
+                <a href="#whitelist-section" onclick="closeDropdownAndScroll(event)">Claim WL</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <h1 class="title">MEGAROSE</h1>
+        <p class="slogan">Where Gaming Meets Digital Artistry</p>
+    </section>
+
+    <!-- Gallery -->
+    <section class="gallery">
+        <div class="gallery-track">
+            <div class="nft-card"><img src="https://iili.io/qBBDknR.png" alt="NFT 1"><div class="card-glow"></div></div>
+            <div class="nft-card"><img src="https://iili.io/qBBDOZv.png" alt="NFT 2"><div class="card-glow"></div></div>
+            <div class="nft-card"><img src="https://iili.io/qBBDNwJ.png" alt="NFT 3"><div class="card-glow"></div></div>
+            <div class="nft-card"><img src="https://iili.io/qBBDX8F.png" alt="NFT 4"><div class="card-glow"></div></div>
+            <div class="nft-card"><img src="https://iili.io/qBBDaTb.png" alt="NFT 5"><div class="card-glow"></div></div>
+            <div class="nft-card"><img src="https://iili.io/qBBD7yu.png" alt="NFT 6"><div class="card-glow"></div></div>
+            <div class="nft-card"><img src="https://iili.io/qBBD5ve.png" alt="NFT 7"><div class="card-glow"></div></div>
+            <div class="nft-card"><img src="https://iili.io/qBBDA37.png" alt="NFT 8"><div class="card-glow"></div></div>
+            <div class="nft-card"><img src="https://iili.io/qBBDCTG.png" alt="NFT 9"><div class="card-glow"></div></div>
+            <div class="nft-card"><img src="https://iili.io/qBBDqps.png" alt="NFT 10"><div class="card-glow"></div></div>
+            <div class="nft-card"><img src="https://iili.io/qBBDfvn.png" alt="NFT 11"><div class="card-glow"></div></div>
+            <div class="nft-card"><img src="https://iili.io/qBBDKYX.png" alt="NFT 12"><div class="card-glow"></div></div>
+            <div class="nft-card"><img src="https://iili.io/qBBtbpa.png" alt="NFT 13"><div class="card-glow"></div></div>
+            <div class="nft-card"><img src="https://iili.io/qBBttYF.png" alt="NFT 14"><div class="card-glow"></div></div>
+            <div class="nft-card"><img src="https://iili.io/qBBtZ21.png" alt="NFT 15"><div class="card-glow"></div></div>
+            <div class="nft-card"><img src="https://iili.io/qBBtsEB.png" alt="NFT 16"><div class="card-glow"></div></div>
+            <div class="nft-card"><img src="https://iili.io/qBBDknR.png" alt="NFT 1"><div class="card-glow"></div></div>
+            <div class="nft-card"><img src="https://iili.io/qBBDOZv.png" alt="NFT 2"><div class="card-glow"></div></div>
+        </div>
+    </section>
+
+    <!-- Join Whitelist Button -->
+    <div class="join-wl" id="whitelist-section">
+        <button class="join-wl-btn" onclick="openTerminal()">Join Whitelist Now</button>
+    </div>
+
+    <!-- Terminal Modal -->
+    <div id="terminalModal" class="modal">
+        <div class="terminal">
+            <div class="terminal-header">
+                <div class="terminal-dots">
+                    <span class="terminal-dot dot-red"></span>
+                    <span class="terminal-dot dot-yellow"></span>
+                    <span class="terminal-dot dot-green"></span>
+                </div>
+                <span class="terminal-title">megarose@whitelist:~/tasks</span>
+                <span class="terminal-close" onclick="closeTerminal()">✕</span>
+            </div>
+            
+            <div class="terminal-body" id="terminalBody">
+                <!-- Terminal content will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal">
+        <div class="terminal" style="max-width: 400px;">
+            <div class="terminal-header">
+                <div class="terminal-dots">
+                    <span class="terminal-dot dot-red"></span>
+                    <span class="terminal-dot dot-yellow"></span>
+                    <span class="terminal-dot dot-green"></span>
+                </div>
+                <span class="terminal-title">success@megarose:~$</span>
+                <span class="terminal-close" onclick="closeSuccessModal()">✕</span>
+            </div>
+            
+            <div class="terminal-body" style="text-align: center; min-height: auto;">
+                <div class="terminal-line">
+                    <span class="terminal-prompt">>></span>
+                    <span class="terminal-success">WHITELIST REGISTRATION SUCCESSFUL!</span>
+                </div>
+                
+                <div class="terminal-line" style="margin: 20px 0;">
+                    <span class="terminal-output">🎉 Welcome to Megarose</span>
+                </div>
+                
+                <div class="terminal-line">
+                    <span class="terminal-info">Transaction Hash:</span>
+                    <span style="color: var(--terminal-blue);">0x7a3d...9f4b</span>
+                </div>
+                
+                <div class="terminal-line">
+                    <span class="terminal-info">Status:</span>
+                    <span class="terminal-success">CONFIRMED ✓</span>
+                </div>
+                
+                <div class="terminal-progress" style="margin: 20px 0;">
+                    <div class="terminal-info">Redirecting to homepage in <span id="countdown">30</span>s</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+                    </div>
+                </div>
+                
+                <button class="terminal-button" onclick="closeSuccessModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Collection Details -->
+    <section class="collection-details">
+        <div class="detail-card">
+            <div class="detail-title">CHAIN</div>
+            <div class="detail-value">MegaETH</div>
+        </div>
+        <div class="detail-card">
+            <div class="detail-title">SUPPLY</div>
+            <div class="detail-value">777</div>
+        </div>
+        <div class="detail-card">
+            <div class="detail-title">WL PRIZE</div>
+            <div class="detail-value">TBA</div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq-section">
+        <h2 class="faq-title">FAQ</h2>
+        <div class="faq-container">
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    What is Megarose?
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="faq-answer">
+                    Megarose is a premium gaming NFT collection featuring unique digital assets with real utility in the MegaETH ecosystem.
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    How do I join whitelist?
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="faq-answer">
+                    Complete the coding terminal tasks, follow @Megaroseart, submit your retweet link and ETH address.
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    When is the mint date?
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="faq-answer">
+                    Mint date will be announced soon. Whitelist members get 24h exclusive access.
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    What are the benefits?
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="faq-answer">
+                    WL holders get guaranteed mint, exclusive airdrops, and early access to gaming features.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Portal Section -->
+    <section class="portal-section">
+        <div class="portal-container">
+            <div class="portal-content">
+                <h3 class="portal-title">System Portal</h3>
+                <div class="portal-status">Main Stage Active</div>
+                <p class="portal-message">Gateway to Megarose Universe</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- JavaScript -->
+    <script>
+        // ===== FIREBASE INITIALIZATION =====
+        const firebaseConfig = {
+            apiKey: "AIzaSyBw0cOGOih_2BL6PK8nksdjGu-XCZ8OvDw",
+            authDomain: "megarose-cd674.firebaseapp.com",
+            projectId: "megarose-cd674",
+            storageBucket: "megarose-cd674.firebasestorage.app",
+            messagingSenderId: "226939448332",
+            appId: "1:226939448332:web:d8b802b07796c5f99ad229",
+            measurementId: "G-BDVCHVK9F9"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        
+        // Terminal state
+        let currentStep = 1;
+        let twitterUsername = '';
+        let retweetLink = '';
+        let ethAddress = '';
+        let countdownInterval;
+        
+        // Get elements
+        const terminalModal = document.getElementById('terminalModal');
+        const successModal = document.getElementById('successModal');
+        const terminalBody = document.getElementById('terminalBody');
+        
+        // Close dropdown and scroll to whitelist section
+        function closeDropdownAndScroll(event) {
+            event.preventDefault();
+            const dropdown = document.querySelector('.dropdown');
+            dropdown.classList.remove('hover');
+            
+            const element = document.getElementById('whitelist-section');
+            element.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Open terminal
+        function openTerminal() {
+            terminalModal.style.display = 'flex';
+            currentStep = 1;
+            renderTerminalStep1();
+        }
+        
+        // Close terminal
+        function closeTerminal() {
+            terminalModal.style.display = 'none';
+            if (countdownInterval) clearInterval(countdownInterval);
+        }
+        
+        // Render Step 1 - Follow Twitter
+        function renderTerminalStep1() {
+            terminalBody.innerHTML = `
+                <div class="terminal-line">
+                    <span class="terminal-prompt">$</span>
+                    <span class="terminal-command">python3 whitelist_tasks.py --init</span>
+                </div>
+                
+                <div class="terminal-line">
+                    <span class="terminal-output">[INFO] Initializing whitelist registration...</span>
+                </div>
+                
+                <div class="terminal-line">
+                    <span class="terminal-output">[TASK 1/3] Follow Twitter Account</span>
+                </div>
+                
+                <div class="terminal-line">
+                    <span class="terminal-info">Please follow: <a href="https://twitter.com/Megaroseart" target="_blank" style="color: var(--light-blue); text-decoration: none;">@Megaroseart</a></span>
+                </div>
+                
+                <div class="terminal-line">
+                    <span class="terminal-output">After following, enter your Twitter username:</span>
+                </div>
+                
+                <div class="terminal-input-area">
+                    <div class="terminal-input-line">
+                        <span class="terminal-input-prompt">>></span>
+                        <input type="text" class="terminal-input-field" id="twitterInput" placeholder="@username" autofocus>
+                        <span class="terminal-cursor"></span>
+                    </div>
+                    <button class="terminal-button" onclick="submitTwitter()">Submit</button>
+                </div>
+            `;
+            
+            // Auto focus input
+            setTimeout(() => {
+                document.getElementById('twitterInput')?.focus();
+            }, 100);
+        }
+        
+        // Submit Twitter
+        function submitTwitter() {
+            const input = document.getElementById('twitterInput').value;
+            
+            if (!input.startsWith('@')) {
+                showError('Twitter username must start with @');
+                return;
+            }
+            
+            twitterUsername = input;
+            
+            terminalBody.innerHTML = `
+                <div class="terminal-line">
+                    <span class="terminal-prompt">$</span>
+                    <span class="terminal-command">python3 whitelist_tasks.py --verify twitter</span>
+                </div>
+                
+                <div class="terminal-line">
+                    <span class="terminal-output">[INFO] Verifying Twitter follow...</span>
+                </div>
+                
+                <div class="terminal-progress">
+                    <div class="terminal-info">Verifying...</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+                    </div>
+                </div>
+            `;
+            
+            // Simulate verification
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 10;
+                document.getElementById('progressFill').style.width = progress + '%';
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        renderTerminalStep2();
+                    }, 500);
+                }
+            }, 200);
+        }
+        
+        // Render Step 2 - Like & Retweet
+        function renderTerminalStep2() {
+            terminalBody.innerHTML = `
+                <div class="terminal-line">
+                    <span class="terminal-prompt">$</span>
+                    <span class="terminal-command">python3 whitelist_tasks.py --step 2</span>
+                </div>
+                
+                <div class="terminal-line">
+                    <span class="terminal-success">✓ Twitter follow verified for ${twitterUsername}</span>
+                </div>
+                
+                <div class="terminal-line">
+                    <span class="terminal-output">[TASK 2/3] Like & Retweet Announcement</span>
+                </div>
+                
+                <div class="terminal-line">
+                    <span class="terminal-info">Please like and retweet this post:</span>
+                </div>
+                
+                <div class="terminal-line">
+                    <a href="https://twitter.com/Megaroseart/status/1896233854779346993" target="_blank" style="color: var(--light-blue); text-decoration: none;">🔗 Click here to view post</a>
+                </div>
+                
+                <div class="terminal-line">
+                    <span class="terminal-output">After retweeting, paste your retweet link:</span>
+                </div>
+                
+                <div class="terminal-input-area">
+                    <div class="terminal-input-line">
+                        <span class="terminal-input-prompt">>></span>
+                        <input type="text" class="terminal-input-field" id="retweetInput" placeholder="https://twitter.com/.../status/..." autofocus>
+                        <span class="terminal-cursor"></span>
+                    </div>
+                    <button class="terminal-button" onclick="submitRetweet()">Submit</button>
+                </div>
+            `;
+            
+            setTimeout(() => {
+                document.getElementById('retweetInput')?.focus();
+            }, 100);
+        }
+        
+        // Submit Retweet
+        function submitRetweet() {
+            const input = document.getElementById('retweetInput').value;
+            
+            if (!input.includes('twitter.com') && !input.includes('x.com')) {
+                showError('Please enter a valid Twitter/X link');
+                return;
+            }
+            
+            retweetLink = input;
+            
+            terminalBody.innerHTML = `
+                <div class="terminal-line">
+                    <span class="terminal-prompt">$</span>
+                    <span class="terminal-command">python3 whitelist_tasks.py --verify retweet</span>
+                </div>
+                
+                <div class="terminal-line">
+                    <span class="terminal-output">[INFO] Verifying retweet...</span>
+                </div>
+                
+                <div class="terminal-progress">
+                    <div class="terminal-info">Verifying...</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+                    </div>
+                </div>
+            `;
+            
+            // Simulate verification
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 10;
+                document.getElementById('progressFill').style.width = progress + '%';
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        renderTerminalStep3();
+                    }, 500);
+                }
+            }, 200);
+        }
+        
+        // Render Step 3 - ETH Address
+        function renderTerminalStep3() {
+            terminalBody.innerHTML = `
+                <div class="terminal-line">
+                    <span class="terminal-prompt">$</span>
+                    <span class="terminal-command">python3 whitelist_tasks.py --step 3</span>
+                </div>
+                
+                <div class="terminal-line">
+                    <span class="terminal-success">✓ Retweet verified!</span>
+                </div>
+                
+                <div class="terminal-line">
+                    <span class="terminal-output">[TASK 3/3] Submit ETH Address</span>
+                </div>
+                
+                <div class="terminal-line">
+                    <span class="terminal-info">Please enter your ETH address (must start with 0x):</span>
+                </div>
+                
+                <div class="terminal-input-area">
+                    <div class="terminal-input-line">
+                        <span class="terminal-input-prompt">>></span>
+                        <input type="text" class="terminal-input-field" id="ethInput" placeholder="0x..." autofocus>
+                        <span class="terminal-cursor"></span>
+                    </div>
+                    <button class="terminal-button" onclick="submitETH()">Submit</button>
+                </div>
+            `;
+            
+            setTimeout(() => {
+                document.getElementById('ethInput')?.focus();
+            }, 100);
+        }
+        
+        // Submit ETH Address
+        function submitETH() {
+            const input = document.getElementById('ethInput').value;
+            
+            const ethRegex = /^0x[a-fA-F0-9]{40}$/;
+            if (!ethRegex.test(input)) {
+                showError('Invalid ETH address. Must be 0x + 40 characters');
+                return;
+            }
+            
+            ethAddress = input;
+            
+            terminalBody.innerHTML = `
+                <div class="terminal-line">
+                    <span class="terminal-prompt">$</span>
+                    <span class="terminal-command">python3 whitelist_tasks.py --verify eth</span>
+                </div>
+                
+                <div class="terminal-line">
+                    <span class="terminal-output">[INFO] Validating ETH address...</span>
+                </div>
+                
+                <div class="terminal-progress">
+                    <div class="terminal-info">Validating...</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+                    </div>
+                </div>
+            `;
+            
+            // Simulate validation
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 10;
+                document.getElementById('progressFill').style.width = progress + '%';
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        renderFinalStep();
+                    }, 500);
+                }
+            }, 200);
+        }
+        
+        // Render Final Step - Submit
+        function renderFinalStep() {
+            terminalBody.innerHTML = `
+                <div class="terminal-line">
+                    <span class="terminal-prompt">$</span>
+                    <span class="terminal-command">python3 whitelist_tasks.py --submit</span>
+                </div>
+                
+                <div class="terminal-line">
+                    <span class="terminal-success">✓ All tasks completed!</span>
+                </div>
+                
+                <div class="terminal-line" style="margin: 20px 0;">
+                    <div style="background: #1a1a1a; padding: 15px; border-radius: 8px;">
+                        <div style="color: var(--soft-green);">📋 Summary:</div>
+                        <div style="color: #fff; margin-top: 10px;">
+                            <div>Twitter: ${twitterUsername}</div>
+                            <div>Retweet: ${retweetLink.substring(0, 30)}...</div>
+                            <div>ETH: ${ethAddress.substring(0, 10)}...${ethAddress.substring(ethAddress.length - 6)}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="terminal-line">
+                    <span class="terminal-info">Ready to submit whitelist application?</span>
+                </div>
+                
+                <button class="terminal-button" onclick="submitWhitelist()" style="width: 100%;">SUBMIT APPLICATION</button>
+            `;
+        }
+        
+        // Submit Whitelist - Saves to Firestore
+        async function submitWhitelist() {
+            // Show saving status
+            terminalBody.innerHTML = `
+                <div class="terminal-line">
+                    <span class="terminal-prompt">$</span>
+                    <span class="terminal-command">python3 whitelist_tasks.py --save</span>
+                </div>
+                
+                <div class="terminal-line">
+                    <span class="terminal-output">[INFO] Saving to database...</span>
+                </div>
+                
+                <div class="terminal-progress">
+                    <div class="terminal-info">Please wait...</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 50%;"></div>
+                    </div>
+                </div>
+            `;
+            
+            try {
+                // Save to Firestore
+                await db.collection("whitelist").add({
+                    twitter: twitterUsername,
+                    retweetLink: retweetLink,
+                    ethAddress: ethAddress,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                console.log("Data saved to Firestore");
+                closeTerminal();
+                showSuccessModal();
+            } catch (error) {
+                console.error("Firestore error:", error);
+                // Show error in terminal
+                terminalBody.innerHTML = `
+                    <div class="terminal-line">
+                        <span class="terminal-prompt">$</span>
+                        <span class="terminal-command">python3 whitelist_tasks.py --save</span>
+                    </div>
+                    
+                    <div class="terminal-line">
+                        <span class="terminal-error">[ERROR] Failed to save: ${error.message}</span>
+                    </div>
+                    
+                    <div class="terminal-line">
+                        <span class="terminal-info">Please try again or contact support.</span>
+                    </div>
+                    
+                    <button class="terminal-button" onclick="renderFinalStep()" style="width: 100%;">Try Again</button>
+                `;
+            }
+        }
+        
+        // Show Success Modal
+        function showSuccessModal() {
+            successModal.style.display = 'flex';
+            
+            let countdown = 30;
+            const countdownSpan = document.getElementById('countdown');
+            const progressFill = document.getElementById('progressFill');
+            
+            countdownInterval = setInterval(() => {
+                countdown--;
+                countdownSpan.textContent = countdown;
+                progressFill.style.width = ((30 - countdown) / 30 * 100) + '%';
+                
+                if (countdown <= 0) {
+                    clearInterval(countdownInterval);
+                    closeSuccessModal();
+                }
+            }, 1000);
+        }
+        
+        // Close Success Modal
+        function closeSuccessModal() {
+            successModal.style.display = 'none';
+            if (countdownInterval) clearInterval(countdownInterval);
+        }
+        
+        // Show Error
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'terminal-line';
+            errorDiv.innerHTML = `<span class="terminal-error">[ERROR] ${message}</span>`;
+            terminalBody.appendChild(errorDiv);
+        }
+        
+        // FAQ Toggle
+        function toggleFAQ(element) {
+            const faqItem = element.parentElement;
+            faqItem.classList.toggle('active');
+        }
+        
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            if (event.target === terminalModal) {
+                closeTerminal();
+            }
+            if (event.target === successModal) {
+                closeSuccessModal();
+            }
+        }
+    </script>
+</body>
+</html>
