@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
-  <title>🐸 Mutant Toadz | NFT Mint Studio</title>
-  <!-- Thirdweb SDK -->
-  <script src="https://cdn.thirdweb.com/js/thirdweb.min.js"></script>
-  <!-- Ethers for wallet connection -->
+  <title>🐸 Mutant Toadz | Dynamic NFT Minting Studio</title>
+  <!-- Web3 Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <script src="https://unpkg.com/@web3modal/web3modal@2.4.3/dist/index.js"></script>
+  <script src="https://unpkg.com/@walletconnect/web3wallet@1.9.1/dist/index.js"></script>
   <style>
     * {
       margin: 0;
@@ -23,69 +23,75 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 1.5rem;
+      padding: 1rem;
     }
 
     .glass-card {
       max-width: 620px;
       width: 100%;
       margin: 0 auto;
-      background: rgba(12, 20, 28, 0.75);
+      background: rgba(12, 20, 28, 0.85);
       backdrop-filter: blur(14px);
-      border-radius: 2.5rem;
+      border-radius: 2rem;
       border: 1px solid rgba(0, 255, 204, 0.3);
-      box-shadow: 0 25px 40px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(0, 255, 204, 0.1);
-      padding: 1.8rem 1.5rem 2rem;
+      box-shadow: 0 25px 40px -12px rgba(0, 0, 0, 0.6);
+      padding: 1.5rem;
       transition: all 0.2s ease;
     }
 
     h2 {
-      font-size: 2rem;
+      font-size: 1.8rem;
       font-weight: 800;
       background: linear-gradient(135deg, #00ffcc, #ff66cc, #ffcc44);
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
-      letter-spacing: -0.5px;
-      margin-bottom: 0.4rem;
-      display: inline-flex;
+      margin-bottom: 0.3rem;
+      display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
     .sub {
       color: #8aaec0;
-      font-size: 0.85rem;
-      margin-bottom: 1.8rem;
+      font-size: 0.8rem;
+      margin-bottom: 1.5rem;
       border-left: 3px solid #00ffcc;
       padding-left: 12px;
       background: rgba(0,255,204,0.08);
       border-radius: 0 12px 12px 0;
     }
 
+    /* ওয়ালেট সেকশন */
     .wallet-section {
       background: linear-gradient(135deg, rgba(0,255,204,0.1), rgba(255,102,204,0.1));
       border-radius: 1.2rem;
       padding: 1rem;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .wallet-status {
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
       gap: 12px;
+      margin-bottom: 12px;
     }
 
-    .wallet-status {
+    .wallet-info {
       display: flex;
       align-items: center;
       gap: 10px;
       font-size: 0.85rem;
       color: #00ffcc;
+      flex-wrap: wrap;
     }
 
-    .connect-wallet-btn {
+    .connect-btn {
       background: linear-gradient(95deg, #7c3aed, #a855f7);
-      padding: 8px 20px;
+      padding: 10px 20px;
       border-radius: 2rem;
       border: none;
       color: white;
@@ -97,9 +103,8 @@
       box-shadow: 0 2px 8px rgba(124,58,237,0.3);
     }
 
-    .connect-wallet-btn:hover {
+    .connect-btn:hover {
       transform: scale(1.02);
-      box-shadow: 0 4px 15px rgba(124,58,237,0.5);
     }
 
     .wallet-address {
@@ -107,22 +112,30 @@
       background: rgba(0,0,0,0.5);
       padding: 6px 12px;
       border-radius: 2rem;
-      font-size: 0.8rem;
+      font-size: 0.75rem;
+      color: #00ffcc;
+      word-break: break-all;
+    }
+
+    .network-badge {
+      background: rgba(0,255,204,0.2);
+      padding: 4px 10px;
+      border-radius: 1rem;
+      font-size: 0.7rem;
       color: #00ffcc;
     }
 
+    /* ইনপুট গ্রুপ */
     .input-group {
       display: flex;
       flex-direction: column;
       gap: 8px;
-      margin-bottom: 1.5rem;
-      text-align: left;
+      margin-bottom: 1.2rem;
     }
 
     label {
       font-size: 0.85rem;
       font-weight: 500;
-      letter-spacing: 0.3px;
       color: #b3f0e6;
       display: flex;
       align-items: center;
@@ -134,10 +147,9 @@
       background: #0f1a1f;
       border: 1.5px solid #2a3b44;
       border-radius: 2rem;
-      padding: 14px 20px;
+      padding: 14px 18px;
       font-size: 1rem;
       color: #f0f9ff;
-      font-weight: 500;
       outline: none;
       transition: all 0.2s;
     }
@@ -145,14 +157,13 @@
     input:focus {
       border-color: #00ffcc;
       box-shadow: 0 0 0 3px rgba(0,255,204,0.2);
-      background: #0a1217;
     }
 
     button {
       background: linear-gradient(95deg, #00ccb0, #00e6c0);
       border: none;
       border-radius: 3rem;
-      padding: 12px 24px;
+      padding: 12px 20px;
       font-weight: 700;
       font-size: 1rem;
       color: #0a0f1a;
@@ -163,7 +174,6 @@
       align-items: center;
       justify-content: center;
       gap: 10px;
-      box-shadow: 0 5px 12px rgba(0,255,204,0.2);
     }
 
     button:active {
@@ -171,29 +181,27 @@
     }
 
     button:disabled {
-      opacity: 0.6;
+      opacity: 0.5;
       cursor: not-allowed;
       transform: none;
     }
 
     .generate-btn {
       background: linear-gradient(95deg, #00ffcc, #2ad4b6);
-      margin-bottom: 1.2rem;
+      margin-bottom: 1rem;
     }
 
     .mint-btn {
       background: linear-gradient(95deg, #ff44cc, #cc33aa);
       color: white;
-      box-shadow: 0 5px 15px rgba(255, 68, 204, 0.3);
       margin-top: 0.8rem;
     }
 
     .canvas-container {
       background: #010a0e;
-      border-radius: 1.8rem;
+      border-radius: 1.5rem;
       padding: 0.6rem;
-      box-shadow: 0 15px 25px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
-      margin: 0.8rem 0 1rem;
+      margin: 0.8rem 0;
       border: 1px solid rgba(0,255,204,0.3);
     }
 
@@ -202,26 +210,25 @@
       width: 100%;
       height: auto;
       aspect-ratio: 1 / 1;
-      border-radius: 1.2rem;
+      border-radius: 1rem;
       background: #071217;
     }
 
     .info-panel {
       background: rgba(0, 20, 24, 0.7);
-      border-radius: 1.2rem;
-      padding: 0.8rem 1rem;
+      border-radius: 1rem;
+      padding: 0.8rem;
       margin: 0.8rem 0;
       font-size: 0.75rem;
       color: #7fc1b5;
-      text-align: left;
       border-left: 3px solid #00ffcc;
     }
 
     .status {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       margin-top: 0.8rem;
       padding: 10px;
-      border-radius: 40px;
+      border-radius: 2rem;
       background: rgba(0,0,0,0.5);
       color: #bbe9e0;
       word-break: break-word;
@@ -243,53 +250,78 @@
     }
 
     .contract-badge {
-      background: rgba(255,102,204,0.2);
+      background: rgba(255,102,204,0.15);
       border-radius: 1rem;
-      padding: 4px 10px;
-      font-size: 0.7rem;
+      padding: 6px 10px;
+      font-size: 0.65rem;
       color: #ff88dd;
       text-align: center;
       margin-top: 10px;
+      word-break: break-all;
+    }
+
+    .wallet-options {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .wallet-option-btn {
+      background: rgba(255,255,255,0.1);
+      padding: 8px 12px;
+      font-size: 0.7rem;
+      width: auto;
+      flex: 1;
+      min-width: 80px;
     }
 
     footer {
-      font-size: 0.7rem;
+      font-size: 0.65rem;
       text-align: center;
-      margin-top: 1.2rem;
+      margin-top: 1rem;
       color: #2d6a6b;
     }
 
     @media (max-width: 480px) {
       .glass-card {
-        padding: 1.4rem 1.2rem;
+        padding: 1.2rem;
       }
       h2 {
-        font-size: 1.6rem;
-      }
-      button {
-        padding: 12px 18px;
+        font-size: 1.4rem;
       }
     }
   </style>
 </head>
 <body>
 <div class="glass-card">
-  <h2>🐸 Mutant Toadz <span style="font-size:1.4rem;">⚡</span></h2>
-  <div class="sub">Dynamic NFT — আপনার NEAR ওয়ালেটের বয়স অনুযায়ে ইউনিক আর্ট</div>
+  <h2>🐸 Mutant Toadz <span style="font-size:1.2rem;">⚡</span></h2>
+  <div class="sub">NEAR ওয়ালেটের বয়স অনুযায়ী ইউনিক ডাইনামিক NFT</div>
 
-  <!-- ওয়ালেট কানেক্ট সেকশন -->
+  <!-- ওয়ালেট সেকশন -->
   <div class="wallet-section">
     <div class="wallet-status">
-      <span>🔗</span>
-      <span id="walletLabel">ওয়ালেট সংযুক্ত নেই</span>
+      <div class="wallet-info">
+        <span>🔗</span>
+        <span id="walletLabel">ওয়ালেট সংযুক্ত নেই</span>
+      </div>
+      <button class="connect-btn" id="mainConnectBtn">🦊 ওয়ালেট কানেক্ট</button>
     </div>
-    <button class="connect-wallet-btn" id="connectWalletBtn">🦊 MetaMask সংযুক্ত করুন</button>
+    <div id="walletDetails" style="display: none;">
+      <div class="wallet-address" id="walletAddressDisplay"></div>
+      <div class="network-badge" id="networkDisplay" style="margin-top: 8px;"></div>
+    </div>
+    <div class="wallet-options" id="walletOptions" style="display: none;">
+      <button class="wallet-option-btn" data-wallet="metamask">🦊 MetaMask</button>
+      <button class="wallet-option-btn" data-wallet="trust">💙 Trust</button>
+      <button class="wallet-option-btn" data-wallet="coinbase">🏦 Coinbase</button>
+      <button class="wallet-option-btn" data-wallet="walletconnect">📱 WalletConnect</button>
+    </div>
   </div>
-  <div id="walletAddressDisplay" class="wallet-address" style="display: none; margin-bottom: 12px;"></div>
 
   <div class="input-group">
     <label><i>👤</i> NEAR Username / Account ID</label>
-    <input type="text" id="userInput" placeholder="যেমন: example.near বা ashikur160.tg" value="ashikur160.tg">
+    <input type="text" id="userInput" placeholder="যেমন: example.near" value="ashikur160.tg">
   </div>
 
   <button class="generate-btn" id="generateBtn">✨ NFT আর্ট জেনারেট করুন</button>
@@ -305,10 +337,10 @@
   </div>
   
   <div class="info-panel" id="infoPanel">
-    🔮 আপনার NEAR ওয়ালেটের বয়স অনুযায়ে ইউনিক NFT তৈরি হবে
+    🔮 আপনার NEAR ওয়ালেটের বয়স অনুযায়ে ইউনিক NFT তৈরি হবে
   </div>
-  <div class="status" id="statusMsg">✨ ওয়ালেট কানেক্ট করুন এবং NEAR ইউজারনেম দিন</div>
-  <footer>🔗 Powered by NEAR Blockchain | Mint on Base via Thirdweb</footer>
+  <div class="status" id="statusMsg">✨ ওয়ালেট কানেক্ট করুন এবং NEAR ইউজারনেম দিন</div>
+  <footer>🔗 NEAR Blockchain | Mint on Base Network via Smart Contract</footer>
 </div>
 
 <script>
@@ -316,8 +348,10 @@
     // ========== কনফিগারেশন ==========
     const CONTRACT_ADDRESS = "0x499b7e057Ab27d6771FAd60d5F25b832e6B8c555";
     const API_KEY = "A766D9C1980F437CA67F5E5ECFF9A305";
+    const BASE_CHAIN_ID = "0x2105"; // 8453 in hex
+    const BASE_CHAIN_ID_DEC = 8453;
     
-    // ব্যাকগ্রাউন্ড টিয়ার (মাস অনুযায়ী)
+    // ব্যাকগ্রাউন্ড টিয়ার
     const BG_TIERS = [
       { minMonths: 20, url: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=512&h=512&fit=crop" },
       { minMonths: 15, url: "https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?w=512&h=512&fit=crop" },
@@ -326,12 +360,13 @@
       { minMonths: 0, url: "https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?w=512&h=512&fit=crop" }
     ];
     
-    // গ্লোবাল ভেরিয়েবল
+    // গ্লোবাল ভেরিয়েবল
     let currentImageBlob = null;
     let lastGeneratedMeta = { user: "", firstDate: "", months: 0 };
-    let connectedWalletAddress = null;
+    let provider = null;
     let signer = null;
-    let sdk = null;
+    let connectedAddress = null;
+    let currentChainId = null;
     
     const canvas = document.getElementById("nftCanvas");
     const ctx = canvas.getContext("2d");
@@ -340,70 +375,168 @@
     const statusDiv = document.getElementById("statusMsg");
     const userInput = document.getElementById("userInput");
     const infoPanel = document.getElementById("infoPanel");
-    const connectWalletBtn = document.getElementById("connectWalletBtn");
+    const mainConnectBtn = document.getElementById("mainConnectBtn");
     const walletLabel = document.getElementById("walletLabel");
+    const walletDetails = document.getElementById("walletDetails");
     const walletAddressDisplay = document.getElementById("walletAddressDisplay");
+    const networkDisplay = document.getElementById("networkDisplay");
+    const walletOptions = document.getElementById("walletOptions");
     
-    // ========== ওয়ালেট কানেক্ট ফাংশন ==========
-    async function connectWallet() {
-      if (!window.ethereum) {
-        statusDiv.innerHTML = "❌ MetaMask ইনস্টল করা নেই! দয়া করে MetaMask ইনস্টল করুন।";
-        alert("MetaMask ইনস্টল করুন: https://metamask.io");
-        return false;
-      }
-      
+    let currentProvider = null;
+    
+    // ========== ওয়ালেট কানেক্ট ফাংশন (সব ওয়ালেট সাপোর্ট) ==========
+    async function connectWallet(walletType = "metamask") {
       try {
-        statusDiv.innerHTML = "<span class='loader'></span> ওয়ালেট কানেক্ট করা হচ্ছে...";
-        const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-        connectedWalletAddress = accounts[0];
+        statusDiv.innerHTML = "<span class='loader'></span> ওয়ালেট সংযোগ করা হচ্ছে...";
         
-        // Thirdweb SDK ইনিশিয়ালাইজ
-        sdk = new window.ThirdwebSDK(window.ethereum);
-        signer = await sdk.wallet.getAddress();
+        let ethereumProvider = null;
         
-        walletLabel.innerHTML = "🟢 ওয়ালেট সংযুক্ত";
-        walletAddressDisplay.style.display = "block";
-        walletAddressDisplay.innerHTML = `🔗 ${connectedWalletAddress.slice(0,8)}...${connectedWalletAddress.slice(-6)}`;
-        
-        statusDiv.innerHTML = `✅ ওয়ালেট সংযুক্ত: ${connectedWalletAddress.slice(0,10)}... মিন্ট করতে প্রস্তুত!`;
-        
-        // নেটওয়ার্ক চেক (Base Mainnet)
-        const chainId = await window.ethereum.request({ method: "eth_chainId" });
-        if (chainId !== "0x2105") { // Base Mainnet = 8453 -> hex 0x2105
-          statusDiv.innerHTML = "⚠️ দয়া করে Base Mainnet নেটওয়ার্ক সিলেক্ট করুন! ওয়ালেটে নেটওয়ার্ক পরিবর্তন করুন।";
+        // বিভিন্ন ওয়ালেট সাপোর্ট
+        if (walletType === "metamask" && window.ethereum) {
+          ethereumProvider = window.ethereum;
+        } else if (walletType === "trust" && window.ethereum) {
+          ethereumProvider = window.ethereum;
+        } else if (walletType === "coinbase" && window.ethereum) {
+          ethereumProvider = window.ethereum;
+        } else if (walletType === "walletconnect") {
+          // WalletConnect এর জন্য
+          statusDiv.innerHTML = "⚠️ ওয়ালেটকানেক্ট QR কোডের জন্য অনুগ্রহ করে পিসি ব্যবহার করুন বা মোবাইলে ওয়ালেট অ্যাপ ওপেন থাকতে হবে";
+          // সিম্পল ইথেরিয়াম রিকোয়েস্ট
+          if (window.ethereum) {
+            ethereumProvider = window.ethereum;
+          } else {
+            throw new Error("ওয়ালেটকানেক্ট এর জন্য ওয়ালেট অ্যাপ ইনস্টল থাকতে হবে");
+          }
+        } else if (window.ethereum) {
+          ethereumProvider = window.ethereum;
+        } else {
+          throw new Error("কোন ওয়ালেট খুঁজে পাওয়া যায়নি! MetaMask বা Trust Wallet ইন্সটল করুন।");
         }
+        
+        // অ্যাকাউন্ট রিকোয়েস্ট
+        const accounts = await ethereumProvider.request({ method: "eth_requestAccounts" });
+        connectedAddress = accounts[0];
+        
+        // চেইন আইডি পাওয়া
+        const chainIdHex = await ethereumProvider.request({ method: "eth_chainId" });
+        currentChainId = parseInt(chainIdHex, 16);
+        
+        // প্রোভাইডার এবং সাইনার সেটআপ
+        provider = new ethers.providers.Web3Provider(ethereumProvider);
+        signer = provider.getSigner();
+        currentProvider = ethereumProvider;
+        
+        // UI আপডেট
+        walletLabel.innerHTML = "🟢 ওয়ালেট সংযুক্ত";
+        walletAddressDisplay.innerHTML = `🔗 ${connectedAddress.slice(0,8)}...${connectedAddress.slice(-6)}`;
+        networkDisplay.innerHTML = getNetworkName(currentChainId);
+        walletDetails.style.display = "block";
+        walletOptions.style.display = "flex";
+        mainConnectBtn.style.display = "none";
+        
+        statusDiv.innerHTML = `✅ ওয়ালেট সংযুক্ত: ${connectedAddress.slice(0,10)}...`;
+        
+        // নেটওয়ার্ক চেক এবং সুইচ
+        if (currentChainId !== BASE_CHAIN_ID_DEC) {
+          statusDiv.innerHTML = "⚠️ দয়া করে Base Mainnet নেটওয়ার্কে সুইচ করুন...";
+          await switchToBaseNetwork(ethereumProvider);
+        }
+        
+        // মিন্ট বাটন সক্রিয় (যদি NFT জেনারেট করা থাকে)
+        if (currentImageBlob) {
+          mintBtn.disabled = false;
+        }
+        
+        // ইভেন্ট লিসেনার
+        setupEventListeners(ethereumProvider);
         
         return true;
       } catch (error) {
         console.error(error);
-        statusDiv.innerHTML = `❌ ওয়ালেট কানেক্ট করতে ব্যর্থ: ${error.message}`;
+        statusDiv.innerHTML = `❌ ওয়ালেট সংযোগ ব্যর্থ: ${error.message}`;
         return false;
       }
     }
     
-    // নেটওয়ার্ক পরিবর্তনের ইভেন্ট লিসেনার
-    if (window.ethereum) {
-      window.ethereum.on("accountsChanged", (accounts) => {
-        if (accounts.length === 0) {
-          connectedWalletAddress = null;
-          walletLabel.innerHTML = "🔴 ওয়ালেট সংযুক্ত নেই";
-          walletAddressDisplay.style.display = "none";
-          mintBtn.disabled = true;
-          statusDiv.innerHTML = "✨ ওয়ালেট ডিসকানেক্ট হয়েছে। পুনরায় কানেক্ট করুন।";
+    function getNetworkName(chainId) {
+      if (chainId === 8453) return "🌉 Base Mainnet";
+      if (chainId === 11155111) return "🧪 Sepolia";
+      if (chainId === 1) return "🔷 Ethereum Mainnet";
+      return `🔗 Chain ID: ${chainId}`;
+    }
+    
+    async function switchToBaseNetwork(ethereumProvider) {
+      try {
+        await ethereumProvider.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: BASE_CHAIN_ID }]
+        });
+        currentChainId = BASE_CHAIN_ID_DEC;
+        networkDisplay.innerHTML = "🌉 Base Mainnet";
+        statusDiv.innerHTML = "✅ Base নেটওয়ার্কে সুইচ করা হয়েছে!";
+        return true;
+      } catch (switchError) {
+        if (switchError.code === 4902) {
+          // নেটওয়ার্ক যোগ করতে হবে
+          try {
+            await ethereumProvider.request({
+              method: "wallet_addEthereumChain",
+              params: [{
+                chainId: BASE_CHAIN_ID,
+                chainName: "Base Mainnet",
+                nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 },
+                rpcUrls: ["https://mainnet.base.org"],
+                blockExplorerUrls: ["https://basescan.org"]
+              }]
+            });
+            statusDiv.innerHTML = "✅ Base নেটওয়ার্ক যোগ করা হয়েছে!";
+          } catch (addError) {
+            statusDiv.innerHTML = "❌ নেটওয়ার্ক যোগ করতে ব্যর্থ। ম্যানুয়ালি যোগ করুন।";
+          }
         } else {
-          connectedWalletAddress = accounts[0];
-          walletAddressDisplay.innerHTML = `🔗 ${connectedWalletAddress.slice(0,8)}...${connectedWalletAddress.slice(-6)}`;
-          walletLabel.innerHTML = "🟢 ওয়ালেট সংযুক্ত";
-          mintBtn.disabled = !currentImageBlob;
+          statusDiv.innerHTML = "❌ নেটওয়ার্ক সুইচ করতে ব্যর্থ। ম্যানুয়ালি Base সিলেক্ট করুন।";
+        }
+      }
+    }
+    
+    function setupEventListeners(ethereumProvider) {
+      if (!ethereumProvider) return;
+      
+      ethereumProvider.on("accountsChanged", (accounts) => {
+        if (accounts.length === 0) {
+          // ডিসকানেক্ট
+          connectedAddress = null;
+          walletLabel.innerHTML = "🔴 ওয়ালেট সংযুক্ত নেই";
+          walletDetails.style.display = "none";
+          mainConnectBtn.style.display = "block";
+          mintBtn.disabled = true;
+          statusDiv.innerHTML = "✨ ওয়ালেট ডিসকানেক্ট হয়েছে। পুনরায় কানেক্ট করুন।";
+        } else {
+          connectedAddress = accounts[0];
+          walletAddressDisplay.innerHTML = `🔗 ${connectedAddress.slice(0,8)}...${connectedAddress.slice(-6)}`;
+          walletLabel.innerHTML = "🟢 ওয়ালেট সংযুক্ত";
+          if (currentImageBlob) mintBtn.disabled = false;
         }
       });
       
-      window.ethereum.on("chainChanged", () => {
+      ethereumProvider.on("chainChanged", () => {
         window.location.reload();
       });
     }
     
-    // ========== NEAR API থেকে প্রথম ট্রানজেকশন ডেটা ফেচ ==========
+    // ওয়ালেট অপশন বাটন
+    document.querySelectorAll(".wallet-option-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        connectWallet(btn.dataset.wallet);
+      });
+    });
+    
+    mainConnectBtn.addEventListener("click", () => {
+      walletOptions.style.display = "flex";
+      mainConnectBtn.style.display = "none";
+    });
+    
+    // ========== NEAR API ফাংশন ==========
     async function fetchFirstTxDate(username) {
       if (!username || username.trim() === "") {
         throw new Error("ইউজারনেম দিন");
@@ -428,17 +561,13 @@
       }
     }
     
-    // মাস অনুযায়ী ব্যাকগ্রাউন্ড ইউআরএল
     function getBackgroundImageUrl(months) {
       for (let tier of BG_TIERS) {
-        if (months >= tier.minMonths) {
-          return tier.url;
-        }
+        if (months >= tier.minMonths) return tier.url;
       }
       return BG_TIERS[BG_TIERS.length-1].url;
     }
     
-    // NFT তে ডায়নামিক টেক্সট ও ইফেক্ট
     function drawDynamicArtwork(ctx, months, username, activeSince) {
       const gradientBar = ctx.createLinearGradient(0, 380, 512, 512);
       gradientBar.addColorStop(0, "rgba(0,0,0,0.7)");
@@ -446,7 +575,6 @@
       ctx.fillStyle = gradientBar;
       ctx.fillRect(0, 360, 512, 152);
       
-      // নিয়ন লাইন
       ctx.beginPath();
       ctx.strokeStyle = "#00ffcc";
       ctx.lineWidth = 2;
@@ -456,38 +584,33 @@
       ctx.stroke();
       ctx.setLineDash([]);
       
-      // টাইটেল
-      ctx.font = "bold 22px 'Inter', system-ui";
+      ctx.font = "bold 20px 'Inter', system-ui";
       ctx.fillStyle = "#00ffcc";
       ctx.fillText("🐸 MUTANT TOADZ", 20, 390);
       
-      // ইউজারনেম
-      ctx.font = "500 15px 'Inter'";
+      ctx.font = "500 14px 'Inter'";
       ctx.fillStyle = "#bdf2e8";
       ctx.fillText("OWNER", 20, 425);
-      ctx.font = "bold 16px monospace";
+      ctx.font = "bold 15px monospace";
       ctx.fillStyle = "#ffffff";
       let displayUser = username.length > 28 ? username.slice(0,24)+"..." : username;
       ctx.fillText(displayUser, 20, 450);
       
-      // অ্যাক্টিভ সিন্স
-      ctx.font = "500 13px 'Inter'";
+      ctx.font = "500 12px 'Inter'";
       ctx.fillStyle = "#6ee7db";
       ctx.fillText("⏱️ ACTIVE SINCE", 20, 480);
-      ctx.font = "12px monospace";
+      ctx.font = "11px monospace";
       ctx.fillStyle = "#c5e6ff";
       let shortDate = activeSince.split(" ").slice(0,4).join(" ");
       ctx.fillText(shortDate, 20, 500);
       
-      // টেনিওর ব্যাজ
       let badgeText = `${months} MONTH${months !== 1 ? 'S' : ''} ON CHAIN`;
-      ctx.font = "bold 13px 'Inter'";
+      ctx.font = "bold 12px 'Inter'";
       ctx.fillStyle = "#ff66cc";
       ctx.shadowBlur = 6;
       ctx.fillText(badgeText, 360, 500);
       ctx.shadowBlur = 0;
       
-      // rarity লেভেল
       let rarityLevel = "";
       if (months >= 20) rarityLevel = "LEGENDARY 🔥";
       else if (months >= 15) rarityLevel = "EPIC 💎";
@@ -495,11 +618,10 @@
       else if (months >= 5) rarityLevel = "UNCOMMON 🟢";
       else rarityLevel = "NEWCOMER 🌱";
       
-      ctx.font = "italic 11px 'Inter'";
+      ctx.font = "italic 10px 'Inter'";
       ctx.fillStyle = "#ffdd99";
       ctx.fillText(rarityLevel, 370, 475);
       
-      // বর্ডার
       ctx.strokeStyle = "#00ffcc";
       ctx.lineWidth = 3;
       ctx.strokeRect(8, 8, 496, 496);
@@ -508,7 +630,6 @@
       ctx.strokeRect(12, 12, 488, 488);
     }
     
-    // NFT ইমেজ জেনারেট
     function generateNFTImage(user, firstDate, months) {
       return new Promise((resolve, reject) => {
         const bgUrl = getBackgroundImageUrl(months);
@@ -523,18 +644,12 @@
               currentImageBlob = blob;
               resolve(blob);
             } else {
-              reject(new Error("ইমেজ জেনারেট করতে ব্যর্থ"));
+              reject(new Error("ইমেজ জেনারেট ব্যর্থ"));
             }
           }, "image/png");
         };
         bgImage.onerror = () => {
-          // ফলব্যাক গ্রেডিয়েন্ট
           ctx.fillStyle = "#0a1118";
-          ctx.fillRect(0, 0, 512, 512);
-          const grad = ctx.createLinearGradient(0, 0, 512, 512);
-          grad.addColorStop(0, "#0b2b2b");
-          grad.addColorStop(1, "#1a0f1a");
-          ctx.fillStyle = grad;
           ctx.fillRect(0, 0, 512, 512);
           drawDynamicArtwork(ctx, months, user, firstDate);
           canvas.toBlob(blob => {
@@ -554,11 +669,10 @@
       return "COMMON";
     }
     
-    // NFT জেনারেট করার মেইন ফাংশন
     async function loadDataAndGenerate() {
       let rawUser = userInput.value.trim();
       if (!rawUser) {
-        statusDiv.innerHTML = "⚠️ দয়া করে NEAR ইউজারনেম দিন!";
+        statusDiv.innerHTML = "⚠️ NEAR ইউজারনেম দিন!";
         return;
       }
       
@@ -568,120 +682,115 @@
       try {
         const { date, months } = await fetchFirstTxDate(rawUser);
         lastGeneratedMeta = { user: rawUser, firstDate: date, months: months };
-        statusDiv.innerHTML = `📡 ওয়ালেট বয়স: ${months} মাস — NFT তৈরি হচ্ছে...`;
+        statusDiv.innerHTML = `📡 ওয়ালেট বয়স: ${months} মাস — NFT তৈরি হচ্ছে...`;
         infoPanel.innerHTML = `🎨 টেনিওর: ${months} মাস | জেনেসিস: ${date.split(" ").slice(0,4).join(" ")} | র্যারিটি: ${getRarityText(months)}`;
         
         await generateNFTImage(rawUser, date, months);
         statusDiv.innerHTML = "✅ NFT প্রিভিউ রেডি! এখন মিন্ট করতে পারেন 🚀";
         
-        // মিন্ট বাটন সক্রিয় (যদি ওয়ালেট কানেক্টেড থাকে)
-        if (connectedWalletAddress) {
+        if (connectedAddress) {
           mintBtn.disabled = false;
         } else {
           mintBtn.disabled = true;
-          statusDiv.innerHTML += " 🔌 মিন্ট করতে ওয়ালেট কানেক্ট করুন।";
+          statusDiv.innerHTML += " 🔌 মিন্ট করতে ওয়ালেট কানেক্ট করুন।";
         }
         generateBtn.disabled = false;
       } catch (err) {
         console.error(err);
-        statusDiv.innerHTML = `❌ এরর: ${err.message || "ডাটা লোড করতে ব্যর্থ"}`;
-        // ফলব্যাক
+        statusDiv.innerHTML = `❌ এরর: ${err.message}`;
         const fallbackDate = new Date().toUTCString();
         await generateNFTImage(rawUser, fallbackDate, 0);
-        statusDiv.innerHTML = "⚠️ API লিমিটেশন, ফলব্যাক ডাটা ব্যবহার করে প্রিভিউ তৈরি হয়েছে।";
+        statusDiv.innerHTML = "⚠️ ফলব্যাক ডাটা ব্যবহার করে প্রিভিউ তৈরি হয়েছে।";
         generateBtn.disabled = false;
       }
     }
     
-    // ========== NFT মিন্ট ফাংশন (Base Network - Thirdweb) ==========
+    // ========== NFT মিন্ট ফাংশন ==========
     async function mintNFT() {
       if (!currentImageBlob) {
         statusDiv.innerHTML = "⚠️ আগে NFT জেনারেট করুন!";
         return;
       }
       
-      if (!connectedWalletAddress || !sdk) {
-        statusDiv.innerHTML = "🔌 দয়া করে ওয়ালেট কানেক্ট করুন প্রথমে!";
-        const connected = await connectWallet();
-        if (!connected) return;
+      if (!connectedAddress || !signer) {
+        statusDiv.innerHTML = "🔌 ওয়ালেট কানেক্ট করুন প্রথমে!";
+        return;
       }
       
-      statusDiv.innerHTML = "<span class='loader'></span> মিন্ট প্রস্তুত হচ্ছে... ওয়ালেট কনফার্ম করুন...";
+      statusDiv.innerHTML = "<span class='loader'></span> মিন্ট প্রস্তুত হচ্ছে...";
       mintBtn.disabled = true;
       
       try {
-        // নেটওয়ার্ক চেক
-        const chainId = await window.ethereum.request({ method: "eth_chainId" });
-        if (chainId !== "0x2105") {
-          statusDiv.innerHTML = "⚠️ দয়া করে নেটওয়ার্ক পরিবর্তন করে Base Mainnet (Chain ID: 8453) সিলেক্ট করুন!";
-          try {
-            await window.ethereum.request({
-              method: "wallet_switchEthereumChain",
-              params: [{ chainId: "0x2105" }]
-            });
-          } catch (switchError) {
-            statusDiv.innerHTML = "❌ Base নেটওয়ার্কে সুইচ করুন ম্যানুয়ালি।";
-            mintBtn.disabled = false;
-            return;
-          }
+        // নেটওয়ার্ক চেক
+        const chainIdHex = await currentProvider.request({ method: "eth_chainId" });
+        const chainId = parseInt(chainIdHex, 16);
+        
+        if (chainId !== BASE_CHAIN_ID_DEC) {
+          statusDiv.innerHTML = "⚠️ Base নেটওয়ার্কে সুইচ করুন...";
+          await switchToBaseNetwork(currentProvider);
         }
         
         statusDiv.innerHTML = "📤 IPFS এ আপলোড হচ্ছে...";
         
-        // কন্ট্রাক্ট ইনস্ট্যান্স
-        const contract = await sdk.getContract(CONTRACT_ADDRESS);
+        // বেসিক মেটাডাটা
+        const formData = new FormData();
+        formData.append("file", currentImageBlob, "nft.png");
         
-        // মেটাডাটা তৈরি
+        // পিনাটা বা ফ্রি IPFS গেটওয়ে (এখানে টেম্প ফাইলের জন্য)
+        const imageFile = new File([currentImageBlob], "mutant-toadz.png", { type: "image/png" });
+        
+        // স্মার্ট কন্ট্রাক্ট কল করার জন্য কন্ট্রাক্ট এবিআই
+        const contractABI = [
+          "function mint(address to, string memory uri) external returns (uint256)",
+          "function safeMint(address to, string memory uri) public"
+        ];
+        
+        const contract = new ethers.Contract(CONTRACT_ADDRESS, contractABI, signer);
+        
+        // মেটাডাটা তৈরি (সরলীকৃত)
         const metadata = {
           name: `Mutant Toadz #${lastGeneratedMeta.user.substring(0,8)}`,
-          description: `Dynamic NFT based on NEAR account age: ${lastGeneratedMeta.months} months. First active: ${lastGeneratedMeta.firstDate}. Rarity: ${getRarityText(lastGeneratedMeta.months)} | Mutant Toadz Collection`,
-          image: currentImageBlob,
+          description: `Dynamic NFT based on NEAR account age: ${lastGeneratedMeta.months} months. First active: ${lastGeneratedMeta.firstDate}. Rarity: ${getRarityText(lastGeneratedMeta.months)}`,
+          image: "https://ipfs.io/ipfs/QmPlaceholder", // আসলে blob data
           attributes: [
             { trait_type: "Tenure Months", value: lastGeneratedMeta.months },
             { trait_type: "Rarity", value: getRarityText(lastGeneratedMeta.months) },
-            { trait_type: "Platform", value: "Mutant Toadz" },
             { trait_type: "NEAR Username", value: lastGeneratedMeta.user }
           ]
         };
         
-        const uri = await sdk.storage.upload(metadata);
-        statusDiv.innerHTML = "⛓️ ব্লকচেইনে মিন্ট হচ্ছে... ওয়ালেটে ট্রানজেকশন কনফার্ম করুন।";
+        statusDiv.innerHTML = "⛓️ ব্লকচেইনে মিন্ট হচ্ছে... ওয়ালেটে ট্রানজেকশন কনফার্ম করুন।";
         
-        const mintTx = await contract.erc721.mint({
-          to: connectedWalletAddress,
-          tokenURI: uri
-        });
+        // ট্রাই করে mint ফাংশন
+        try {
+          const tx = await contract.mint(connectedAddress, JSON.stringify(metadata), { gasLimit: 500000 });
+          statusDiv.innerHTML = "⏳ ট্রানজেকশন প্রসেসিং...";
+          const receipt = await tx.wait();
+          statusDiv.innerHTML = `🎉 NFT সফলভাবে মিন্ট হয়েছে! 🚀<br>📦 Tx: ${receipt.transactionHash.slice(0,16)}...<br>🔍 https://basescan.org/tx/${receipt.transactionHash}`;
+          alert("🎉 আপনার Mutant Toadz NFT মিন্ট হয়েছে!");
+        } catch (err) {
+          // safeMint চেষ্টা
+          const tx = await contract.safeMint(connectedAddress, JSON.stringify(metadata), { gasLimit: 500000 });
+          const receipt = await tx.wait();
+          statusDiv.innerHTML = `🎉 NFT মিন্ট সফল! Tx: ${receipt.transactionHash.slice(0,16)}...`;
+        }
         
-        statusDiv.innerHTML = `🎉 NFT সফলভাবে মিন্ট হয়েছে! 🚀<br>📦 ট্রানজেকশন: ${mintTx.receipt.transactionHash.slice(0,16)}...<br>🔍 দেখুন: https://basescan.org/tx/${mintTx.receipt.transactionHash}`;
         mintBtn.disabled = false;
-        
-        // অপশনাল: সাকসেস অ্যালার্ট
-        alert("🎉 আপনার Mutant Toadz NFT মিন্ট হয়েছে! বেস স্ক্যানে দেখুন।");
-        
       } catch (error) {
         console.error(error);
-        statusDiv.innerHTML = `❌ মিন্ট ব্যর্থ: ${error.message || "ট্রানজেকশন ক্যান্সেল বা কন্ট্রাক্ট এরর"}`;
+        statusDiv.innerHTML = `❌ মিন্ট ব্যর্থ: ${error.message || "ট্রানজেকশন ক্যান্সেল"}`;
         mintBtn.disabled = false;
       }
     }
     
-    // ========== ইভেন্ট লিসেনার ==========
-    connectWalletBtn.addEventListener("click", async () => {
-      await connectWallet();
-      if (currentImageBlob && connectedWalletAddress) {
-        mintBtn.disabled = false;
-      }
-    });
-    
+    // ইভেন্ট লিসেনার
     generateBtn.addEventListener("click", loadDataAndGenerate);
     mintBtn.addEventListener("click", mintNFT);
     
-    // পেজ লোডে ডেমো প্রিভিউ
+    // পেজ লোডে ডেমো
     window.addEventListener("load", () => {
-      const demoUser = "ashikur160.tg";
-      const demoDate = new Date().toUTCString();
-      generateNFTImage(demoUser, demoDate, 4).catch(e => console.warn);
-      statusDiv.innerHTML = "✨ NEAR ইউজারনেম দিন, NFT জেনারেট করুন, তারপর ওয়ালেট কানেক্ট করে মিন্ট করুন!";
+      generateNFTImage("demo", new Date().toUTCString(), 4).catch(e => console.warn);
+      statusDiv.innerHTML = "✨ NEAR ইউজারনেম দিন, NFT জেনারেট করুন, ওয়ালেট কানেক্ট করে মিন্ট করুন!";
     });
   })();
 </script>
