@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Degenz CAT Mint</title>
 
-  <!-- Thirdweb SDK -->
-  <script src="https://unpkg.com/@thirdweb-dev/sdk@latest/dist/thirdweb-dev-sdk.browser.min.js"></script>
+  <!-- Ethers.js -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
 
   <style>
     body {
@@ -83,7 +83,8 @@
     <div class="card">
       <img src="https://iili.io/Bg5RdSn.gif" alt="NFT"/>
       <div class="info">
-        Price: 0.05 SOL<br/>
+        Price: FREE ETH<br/>
+        Network: Base<br/>
         Supply: 1819
       </div>
     </div>
@@ -95,39 +96,52 @@
   </div>
 
   <script>
-    let provider = null;
-    let walletAddress = null;
+    let provider;
+    let signer;
+    let userAddress;
+
+    const contractAddress = "0x2D229fd380ed2afC3DB064aeB980736A151f0c20";
+
+    // 🔥 BASIC ERC721 ABI (mint function)
+    const abi = [
+      "function mint(uint256 quantity) public payable"
+    ];
 
     async function connectWallet() {
-      try {
-        if (window.solana && window.solana.isPhantom) {
-          const resp = await window.solana.connect();
-          walletAddress = resp.publicKey.toString();
-          document.getElementById("wallet").innerText = "Connected: " + walletAddress;
-        } else {
-          alert("Please install Phantom Wallet");
+      if (window.ethereum) {
+        try {
+          provider = new ethers.providers.Web3Provider(window.ethereum);
+          await provider.send("eth_requestAccounts", []);
+          signer = provider.getSigner();
+          userAddress = await signer.getAddress();
+
+          document.getElementById("wallet").innerText =
+            "Connected: " + userAddress;
+
+        } catch (err) {
+          alert("Connection failed");
         }
-      } catch (err) {
-        alert("Connection failed");
+      } else {
+        alert("Please install MetaMask");
       }
     }
 
     async function mintNFT() {
-      if (!walletAddress) {
+      if (!signer) {
         alert("Connect wallet first!");
         return;
       }
 
       try {
-        alert("Minting started...");
+        const contract = new ethers.Contract(contractAddress, abi, signer);
 
-        // 🔥 THIRDWEB PLACEHOLDER
-        const sdk = new window.ThirdwebSDK("solana");
+        const tx = await contract.mint(1, {
+          value: ethers.utils.parseEther("0.00")
+        });
 
-        const program = await sdk.getProgram("YOUR_CONTRACT_ADDRESS");
+        alert("Minting... please wait");
 
-        // Example mint call (adjust based on your contract)
-        await program.rpc.mint();
+        await tx.wait();
 
         alert("Mint Successful 🚀");
 
