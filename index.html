@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Azurite Tap Miner - Telegram Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <!-- Top Stats Bar -->
+        <div class="stats-panel">
+            <div class="stat">
+                <span class="stat-icon">🔷</span>
+                <span id="tokenCount">0</span>
+                <span class="stat-label">Azurite</span>
+            </div>
+            <div class="stat">
+                <span class="stat-icon">⚡</span>
+                <span id="clickPower">1</span>
+                <span class="stat-label">Tap Power</span>
+            </div>
+            <div class="stat">
+                <span class="stat-icon">⏱️</span>
+                <span id="autoPower">0</span>
+                <span class="stat-label">Auto/sec</span>
+            </div>
+            <div class="stat">
+                <span class="stat-icon">📊</span>
+                <span id="level">1</span>
+                <span class="stat-label">Level</span>
+            </div>
+        </div>
+
+        <!-- Super Power Button (hidden by default) -->
+        <div id="superBtn" class="super-btn hidden">
+            🌟 SUPER POWER! 5x for 1min 🌟
+        </div>
+
+        <!-- 3D Canvas (এখানে GLB রেন্ডার হবে) -->
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- Upgrade Buttons -->
+        <div class="upgrade-panel">
+            <button id="upgradeTap" class="upgrade-btn">
+                🔨 Upgrade Tap <span id="tapCost">100</span>
+            </button>
+            <button id="upgradeAuto" class="upgrade-btn">
+                ⚙️ Upgrade Auto <span id="autoCost">150</span>
+            </button>
+        </div>
+
+        <!-- Click Effect Container -->
+        <div id="tapEffect"></div>
+    </div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
+            }
+        }
+    </script>
+    <script src="game.js" type="module"></script>
+</body>
+</html>
