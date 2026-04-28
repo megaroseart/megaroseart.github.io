@@ -2,66 +2,100 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Azurite Tap Miner - Telegram Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>PulseTap – Crypto Mining</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
-    <div class="game-container">
-        <!-- Top Stats Bar -->
-        <div class="stats-panel">
+    <div class="app-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="user-info">
+                <span id="username">Loading...</span>
+                <span class="level-badge" id="levelBadge">Lv 1</span>
+            </div>
+            <div class="balance-card">
+                <span class="balance-label">💰 Balance</span>
+                <span class="balance-value" id="balance">0</span>
+                <span class="token-symbol">PULSE</span>
+            </div>
+        </div>
+
+        <!-- Tap Button Area -->
+        <div class="mining-area">
+            <div class="energy-bar">
+                <div class="energy-fill" id="energyFill" style="width: 100%"></div>
+                <span class="energy-text" id="energyText">1000/1000</span>
+            </div>
+            <div class="tap-button" id="tapButton">
+                <div class="ripple"></div>
+                <span class="lightning">⚡</span>
+            </div>
+            <div class="tap-value">+<span id="tapValue">1</span> per tap</div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="stats-row">
             <div class="stat">
-                <span class="stat-icon">🔷</span>
-                <span id="tokenCount">0</span>
-                <span class="stat-label">Azurite</span>
+                <span class="stat-label">Total Mined</span>
+                <span class="stat-value" id="totalMined">0</span>
             </div>
             <div class="stat">
-                <span class="stat-icon">⚡</span>
-                <span id="clickPower">1</span>
-                <span class="stat-label">Tap Power</span>
-            </div>
-            <div class="stat">
-                <span class="stat-icon">⏱️</span>
-                <span id="autoPower">0</span>
-                <span class="stat-label">Auto/sec</span>
-            </div>
-            <div class="stat">
-                <span class="stat-icon">📊</span>
-                <span id="level">1</span>
                 <span class="stat-label">Level</span>
+                <span class="stat-value" id="level">1</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Next Level</span>
+                <span class="stat-value" id="nextLevelCost">100</span>
             </div>
         </div>
 
-        <!-- Super Power Button (hidden by default) -->
-        <div id="superBtn" class="super-btn hidden">
-            🌟 SUPER POWER! 5x for 1min 🌟
+        <!-- Upgrade Button -->
+        <button class="upgrade-btn" id="upgradeBtn">⬆️ Upgrade Mining Power</button>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="leaderboard">🏆 Leaderboard</button>
+            <button class="tab-btn" data-tab="referral">👥 Referral</button>
+            <button class="tab-btn" data-tab="missions">📋 Missions</button>
         </div>
 
-        <!-- 3D Canvas (এখানে GLB রেন্ডার হবে) -->
-        <canvas id="gameCanvas"></canvas>
-
-        <!-- Upgrade Buttons -->
-        <div class="upgrade-panel">
-            <button id="upgradeTap" class="upgrade-btn">
-                🔨 Upgrade Tap <span id="tapCost">100</span>
-            </button>
-            <button id="upgradeAuto" class="upgrade-btn">
-                ⚙️ Upgrade Auto <span id="autoCost">150</span>
-            </button>
+        <!-- Tab Content -->
+        <div id="leaderboard" class="tab-content active">
+            <div class="leaderboard-list" id="leaderboardList">
+                <div class="loading">Loading top miners...</div>
+            </div>
         </div>
 
-        <!-- Click Effect Container -->
-        <div id="tapEffect"></div>
+        <div id="referral" class="tab-content">
+            <div class="referral-box">
+                <p>Invite friends & earn <strong>10%</strong> of their taps!</p>
+                <div class="referral-link-box">
+                    <input type="text" id="referralLink" readonly>
+                    <button id="copyLinkBtn">📋 Copy</button>
+                </div>
+                <div class="referral-stats">
+                    <span>👥 Referrals: <strong id="referralCount">0</strong></span>
+                    <span>🎁 Bonus Earned: <strong id="referralBonus">0</strong></span>
+                </div>
+            </div>
+        </div>
+
+        <div id="missions" class="tab-content">
+            <div class="mission-list" id="missionList">
+                <div class="mission">
+                    <span>🏆 Tap 1000 times today</span>
+                    <span id="missionTapProgress">0/1000</span>
+                </div>
+                <div class="mission">
+                    <span>👥 Invite 1 friend</span>
+                    <span id="missionInviteProgress">0/1</span>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
-            }
-        }
-    </script>
-    <script src="game.js" type="module"></script>
+    <script src="app.js"></script>
 </body>
 </html>
