@@ -3,223 +3,258 @@
     padding: 0;
     box-sizing: border-box;
     user-select: none;
-    -webkit-tap-highlight-color: transparent;
 }
 
 body {
+    background: linear-gradient(135deg, #0a0f1e 0%, #0c1222 100%);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: white;
+    min-height: 100vh;
+    padding: 16px;
+}
+
+.app-container {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+/* Header */
+.header {
+    margin-bottom: 24px;
+}
+
+.user-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+.level-badge {
+    background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: bold;
+}
+
+.balance-card {
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    padding: 16px 20px;
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.balance-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.6;
+}
+
+.balance-value {
+    font-size: 42px;
+    font-weight: 800;
+    display: block;
+    margin: 8px 0;
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.token-symbol {
+    font-size: 12px;
+    opacity: 0.6;
+}
+
+/* Mining Area */
+.mining-area {
+    text-align: center;
+    margin: 30px 0;
+}
+
+.energy-bar {
+    background: rgba(255,255,255,0.1);
+    border-radius: 20px;
+    height: 8px;
+    margin-bottom: 30px;
     overflow: hidden;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
 }
 
-.game-container {
+.energy-fill {
+    background: linear-gradient(90deg, #00ff88, #00ccff);
+    width: 100%;
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+.energy-text {
+    font-size: 12px;
+    margin-top: 6px;
+    display: block;
+}
+
+.tap-button {
+    width: 180px;
+    height: 180px;
+    background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+    border-radius: 50%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 20px 40px rgba(0,212,255,0.3);
+    transition: transform 0.05s linear;
     position: relative;
-    width: 100vw;
-    height: 100vh;
 }
 
-/* Stats Panel */
-.stats-panel {
-    position: fixed;
-    top: 10px;
-    left: 10px;
-    right: 10px;
+.tap-button:active {
+    transform: scale(0.95);
+}
+
+.lightning {
+    font-size: 64px;
+}
+
+.ripple {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    animation: rippleAnim 0.5s ease-out;
+    pointer-events: none;
+}
+
+@keyframes rippleAnim {
+    0% { transform: scale(1); opacity: 0.6; box-shadow: 0 0 0 0 rgba(0,212,255,0.7); }
+    100% { transform: scale(1.5); opacity: 0; box-shadow: 0 0 0 20px rgba(0,212,255,0); }
+}
+
+.tap-value {
+    margin-top: 16px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* Stats */
+.stats-row {
     display: flex;
     justify-content: space-around;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(10px);
-    padding: 12px;
+    background: rgba(255,255,255,0.05);
     border-radius: 20px;
-    z-index: 10;
-    gap: 10px;
-    flex-wrap: wrap;
-    border: 1px solid rgba(255, 215, 0, 0.3);
+    padding: 16px;
+    margin: 20px 0;
 }
 
 .stat {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 8px 16px;
-    border-radius: 15px;
-    min-width: 80px;
-}
-
-.stat-icon {
-    font-size: 24px;
-}
-
-.stat span:nth-child(2) {
-    font-size: 24px;
-    font-weight: bold;
-    color: #ffd700;
+    text-align: center;
 }
 
 .stat-label {
     font-size: 12px;
-    color: #aaa;
-}
-
-/* Canvas for 3D */
-#gameCanvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    opacity: 0.6;
     display: block;
-    cursor: pointer;
 }
 
-/* Super Power Button */
-.super-btn {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: linear-gradient(135deg, #ffd700, #ff8c00);
-    color: #000;
-    padding: 15px 30px;
-    border-radius: 50px;
-    font-size: 20px;
+.stat-value {
+    font-size: 22px;
     font-weight: bold;
-    cursor: pointer;
-    z-index: 20;
-    animation: pulse 1s infinite;
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
-    border: none;
-    white-space: nowrap;
+    display: block;
 }
 
-.super-btn.hidden {
-    display: none;
-}
-
-@keyframes pulse {
-    0%, 100% { transform: translate(-50%, -50%) scale(1); }
-    50% { transform: translate(-50%, -50%) scale(1.05); }
-}
-
-/* Upgrade Panel */
-.upgrade-panel {
-    position: fixed;
-    bottom: 20px;
-    left: 10px;
-    right: 10px;
-    display: flex;
-    gap: 15px;
-    z-index: 10;
-}
-
+/* Buttons */
 .upgrade-btn {
-    flex: 1;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(10px);
-    border: 1px solid #ffd700;
-    color: #ffd700;
-    padding: 12px;
-    border-radius: 25px;
-    font-size: 16px;
+    width: 100%;
+    background: linear-gradient(135deg, #7b2cbf, #00d4ff);
+    border: none;
+    padding: 14px;
+    border-radius: 40px;
+    color: white;
     font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    margin-bottom: 24px;
+    transition: transform 0.1s;
+}
+
+.upgrade-btn:active {
+    transform: scale(0.98);
+}
+
+/* Tabs */
+.tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.tab-btn {
+    flex: 1;
+    background: rgba(255,255,255,0.05);
+    border: none;
+    padding: 12px;
+    border-radius: 30px;
+    color: white;
     cursor: pointer;
     transition: all 0.2s;
 }
 
-.upgrade-btn:active {
-    transform: scale(0.95);
-    background: rgba(255, 215, 0, 0.2);
+.tab-btn.active {
+    background: linear-gradient(135deg, #00d4ff, #7b2cbf);
 }
 
-/* Tap Effect */
-#tapEffect {
-    position: fixed;
-    pointer-events: none;
-    z-index: 15;
+.tab-content {
+    display: none;
+    background: rgba(255,255,255,0.03);
+    border-radius: 20px;
+    padding: 16px;
 }
 
-.tap-particle {
-    position: absolute;
-    font-size: 24px;
+.tab-content.active {
+    display: block;
+}
+
+/* Referral */
+.referral-link-box {
+    display: flex;
+    gap: 8px;
+    margin: 12px 0;
+}
+
+.referral-link-box input {
+    flex: 1;
+    background: rgba(255,255,255,0.1);
+    border: none;
+    padding: 10px;
+    border-radius: 12px;
+    color: white;
+}
+
+.referral-link-box button {
+    background: #00d4ff;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 12px;
     font-weight: bold;
-    color: #ffd700;
-    animation: floatUp 0.6s ease-out forwards;
-    text-shadow: 0 0 5px #ff8c00;
+    cursor: pointer;
 }
 
-@keyframes floatUp {
-    0% {
-        opacity: 1;
-        transform: translateY(0) scale(0.8);
-    }
-    100% {
-        opacity: 0;
-        transform: translateY(-100px) scale(1.5);
-    }
+/* Missions */
+.mission {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    margin-bottom: 8px;
 }
 
-/* Level Up Animation */
-.levelup-effect {
-    position: fixed;
-    top: 40%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 40px;
-    font-weight: bold;
-    color: #ffd700;
-    text-shadow: 0 0 10px #ff8c00;
-    animation: levelUpAnim 1s ease-out forwards;
-    pointer-events: none;
-    z-index: 25;
-    white-space: nowrap;
-}
-
-@keyframes levelUpAnim {
-    0% {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(0.5);
-    }
-    100% {
-        opacity: 0;
-        transform: translate(-50%, -100px) scale(2);
-    }
-}
-
-/* Speed Burst Animation */
-.speed-burst {
-    position: fixed;
-    top: 20%;
-    left: 0;
-    right: 0;
+.loading {
     text-align: center;
-    font-size: 28px;
-    font-weight: bold;
-    color: #00ffcc;
-    text-shadow: 0 0 10px #00ffcc;
-    animation: burstFade 0.8s ease-out forwards;
-    pointer-events: none;
-    z-index: 25;
-}
-
-@keyframes burstFade {
-    0% { opacity: 1; transform: scale(0.8); }
-    100% { opacity: 0; transform: scale(1.5); }
-}
-
-/* Super Active Border */
-.super-active-border {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    pointer-events: none;
-    border: 5px solid rgba(255, 215, 0, 0.6);
-    animation: borderPulse 0.5s infinite;
-    z-index: 30;
-}
-
-@keyframes borderPulse {
-    0%, 100% { border-color: rgba(255, 215, 0, 0.3); }
-    50% { border-color: rgba(255, 215, 0, 1); }
+    opacity: 0.6;
+    padding: 20px;
 }
