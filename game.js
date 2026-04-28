@@ -72,7 +72,7 @@ scene.add(stars);
 
 // ==================== LOAD YOUR GLB MODEL ====================
 // ⚠️ IMPORTANT: Change 'your-model.glb' to your actual GLB filename!
-const modelPath = 'your-model.glb';  // ← তোমার GLB ফাইলের নাম এখানে দাও
+const modelPath = 'crystal_stone_rock.glb';  // ← তোমার GLB ফাইলের নাম এখানে দাও
 
 let clickableModel = null;
 const loader = new GLTFLoader();
