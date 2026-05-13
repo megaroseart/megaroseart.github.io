@@ -9,406 +9,414 @@
   <script src="/_sdk/element_sdk.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&amp;family=DM+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet">
   <style>
-html,body{height:100%;margin:0;padding:0}
-*{box-sizing:border-box}
+    html, body { height: 100%; margin: 0; }
+    body { font-family: 'DM Sans', sans-serif; }
+    .mono { font-family: 'Space Mono', monospace; }
 
-.riso-filter {
-  filter: contrast(1.4) saturate(1.8) hue-rotate(-5deg) brightness(0.98) drop-shadow(0 0 0 rgba(0,0,0,0.1));
-  position: relative;
-  image-rendering: crisp-edges;
-}
+    .riso-filter {
+      filter: 
+        contrast(1.6) 
+        saturate(0.25) 
+        brightness(1.15)
+        hue-rotate(-5deg)
+        drop-shadow(0 0 1px rgba(0,0,0,0.2));
+      position: relative;
+    }
 
-.riso-effect {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: 
-    repeating-linear-gradient(0deg, rgba(227,64,90,0.05) 0px, rgba(227,64,90,0.05) 2px, transparent 2px, transparent 4px),
-    repeating-linear-gradient(90deg, rgba(0,120,191,0.04) 0px, rgba(0,120,191,0.04) 1px, transparent 1px, transparent 3px);
-  mix-blend-mode: overlay;
-}
-.riso-card {
-  position: relative;
-  overflow: hidden;
-  border-radius: 12px;
-}
-.riso-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: 
-    radial-gradient(ellipse at 30% 20%, rgba(227,64,90,0.08) 0%, transparent 60%),
-    radial-gradient(ellipse at 70% 80%, rgba(0,120,191,0.06) 0%, transparent 60%);
-  z-index: 1;
-  pointer-events: none;
-  mix-blend-mode: color;
-}
-.riso-overlay {
-  position: absolute; inset:0; z-index:2; pointer-events:none;
-  background-image: url("data:image/svg+xml,%3Csvg width='2' height='2' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='1' cy='1' r='0.5' fill='rgba(0,0,0,0.02)'/%3E%3C/svg%3E");
-}
+    .riso-filter::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: 
+        repeating-linear-gradient(
+          45deg,
+          transparent,
+          transparent 2px,
+          rgba(255,90,95,0.08) 2px,
+          rgba(255,90,95,0.08) 4px
+        ),
+        repeating-linear-gradient(
+          -45deg,
+          transparent,
+          transparent 2px,
+          rgba(0,120,255,0.06) 2px,
+          rgba(0,120,255,0.06) 4px
+        );
+      pointer-events: none;
+      mix-blend-mode: multiply;
+      z-index: 2;
+    }
 
-.card-hover { transition: transform 0.25s ease, box-shadow 0.25s ease; }
-.card-hover:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.25); }
+    .riso-filter::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: 
+        repeating-linear-gradient(
+          0deg,
+          rgba(0,0,0,0.04) 0px,
+          rgba(0,0,0,0.04) 1px,
+          transparent 1px,
+          transparent 2px
+        );
+      pointer-events: none;
+      z-index: 3;
+      mix-blend-mode: overlay;
+    }
 
-.modal-backdrop {
-  position: fixed; inset:0; background: rgba(0,0,0,0.85); z-index:50;
-  display:flex; align-items:center; justify-content:center;
-  opacity:0; pointer-events:none; transition: opacity 0.3s ease;
-}
-.modal-backdrop.active { opacity:1; pointer-events:auto; }
+    .riso-overlay {
+      position: relative;
+      background: linear-gradient(135deg, rgba(255,90,95,0.12), rgba(0,120,255,0.08));
+    }
 
-.tag { display:inline-block; padding: 4px 10px; border-radius: 6px; font-size: 12px; margin: 3px; }
+    .riso-overlay::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        90deg,
+        rgba(0,0,0,0.02) 0px,
+        rgba(0,0,0,0.02) 1px,
+        transparent 1px,
+        transparent 3px
+      );
+      pointer-events: none;
+      z-index: 2;
+      mix-blend-mode: multiply;
+    }
 
-.skeleton {
-  background: linear-gradient(90deg, #1a1a2e 25%, #2a2a4e 50%, #1a1a2e 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-}
-@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    .card-enter { animation: cardIn 0.4s ease forwards; opacity: 0; }
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
-@keyframes fadeUp {
-  from { opacity:0; transform: translateY(16px); }
-  to { opacity:1; transform: translateY(0); }
-}
-.fade-up { animation: fadeUp 0.4s ease forwards; }
+    .grain {
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    }
 
-.page-bg { background: #0d0d1a; }
-.search-glow:focus { box-shadow: 0 0 0 2px rgba(227,64,90,0.5); }
+    .modal-backdrop {
+      animation: fadeIn 0.2s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
 
-::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-track { background: #0d0d1a; }
-::-webkit-scrollbar-thumb { background: #2a2a4e; border-radius: 4px; }
-</style>
+    .nft-img { transition: filter 0.3s ease; }
+    .scrollbar-thin::-webkit-scrollbar { width: 6px; }
+    .scrollbar-thin::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+  </style>
   <style>body { box-sizing: border-box; }</style>
   <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
  </head>
- <body class="h-full page-bg text-gray-100 overflow-auto" style="font-family:'DM Sans',sans-serif">
-  <div id="app" class="w-full h-full flex flex-col">
+ <body class="h-full bg-[#1a1a2e] text-[#e0e0e0] overflow-auto scrollbar-thin">
+  <div id="app" class="w-full min-h-full grain">
    <!-- Header -->
-   <header class="w-full px-6 py-8 text-center" style="background: linear-gradient(180deg, #1a0a2e 0%, #0d0d1a 100%);">
-    <h1 id="mainTitle" class="text-4xl md:text-5xl font-bold tracking-tight" style="font-family:'Space Mono',monospace; color:#e3405a;">Risograph NFT Viewer</h1>
-    <p id="subtitle" class="mt-3 text-gray-400 text-lg">View all 10,000 NFTs in stunning Risograph style</p>
-    <div class="mt-6 max-w-xl mx-auto flex gap-3">
-     <div class="flex-1 relative">
-      <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500"></i> <input id="searchInput" type="text" placeholder="Search by token ID (e.g. 1, 42, 8491)..." class="w-full pl-10 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-gray-200 placeholder-gray-500 outline-none search-glow transition">
-     </div><button id="searchBtn" class="px-5 py-3 rounded-xl font-semibold text-white transition hover:brightness-110" style="background:#e3405a;"> Go </button>
-    </div>
-    <div class="mt-4 flex justify-center gap-2 flex-wrap" id="quickNav">
-     <button onclick="goToPage(0)" class="px-3 py-1 rounded-lg text-xs bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:border-white/30 transition">1-50</button> <button onclick="jumpToRange(100)" class="px-3 py-1 rounded-lg text-xs bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:border-white/30 transition">100+</button> <button onclick="jumpToRange(500)" class="px-3 py-1 rounded-lg text-xs bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:border-white/30 transition">500+</button> <button onclick="jumpToRange(1000)" class="px-3 py-1 rounded-lg text-xs bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:border-white/30 transition">1000+</button> <button onclick="jumpToRange(5000)" class="px-3 py-1 rounded-lg text-xs bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:border-white/30 transition">5000+</button> <button onclick="jumpToRange(9000)" class="px-3 py-1 rounded-lg text-xs bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:border-white/30 transition">9000+</button>
+   <header class="sticky top-0 z-30 backdrop-blur-md bg-[#1a1a2e]/80 border-b border-[#2a2a4a] px-6 py-4">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+     <div>
+      <h1 id="main-title" class="mono text-2xl font-bold text-[#ff5a5f]">Risograph NFT Gallery</h1>
+      <p id="subtitle" class="text-sm text-[#8888aa] mt-1">10,000 NFTs reimagined in Risograph style</p>
+     </div>
+     <div class="flex items-center gap-3">
+      <div class="flex items-center bg-[#2a2a4a] rounded-lg overflow-hidden">
+       <button id="prev-btn" class="px-3 py-2 hover:bg-[#3a3a5a] transition"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+       <div class="px-3 py-2 mono text-sm">
+        <span>Page </span><input id="page-input" type="number" min="1" max="500" value="1" class="w-12 bg-transparent text-center text-[#ff5a5f] outline-none mono"> / <span id="total-pages">500</span>
+       </div><button id="next-btn" class="px-3 py-2 hover:bg-[#3a3a5a] transition"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+      </div><input id="search-input" type="number" placeholder="Go to #ID" min="1" max="9998" class="bg-[#2a2a4a] rounded-lg px-3 py-2 w-28 text-sm outline-none focus:ring-1 focus:ring-[#ff5a5f] mono">
+     </div>
     </div>
    </header><!-- Grid -->
-   <main class="flex-1 w-full max-w-7xl mx-auto px-4 py-6">
-    <div class="flex items-center justify-between mb-4">
-     <p id="pageInfo" class="text-sm text-gray-500"></p>
-     <div class="flex gap-2">
-      <button id="prevBtn" onclick="changePage(-1)" class="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-gray-400 hover:text-white transition disabled:opacity-30" disabled> <i data-lucide="chevron-left" class="w-4 h-4"></i> </button> <button id="nextBtn" onclick="changePage(1)" class="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-gray-400 hover:text-white transition disabled:opacity-30"> <i data-lucide="chevron-right" class="w-4 h-4"></i> </button>
-     </div>
-    </div>
+   <main class="max-w-7xl mx-auto px-6 py-8">
     <div id="grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
-    <div class="flex items-center justify-center mt-6 gap-2">
-     <button id="prevBtn2" onclick="changePage(-1)" class="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-gray-400 hover:text-white transition disabled:opacity-30" disabled>Previous</button> <span id="pageInfo2" class="text-sm text-gray-500 mx-4"></span> <button id="nextBtn2" onclick="changePage(1)" class="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-gray-400 hover:text-white transition disabled:opacity-30">Next</button>
+    <div id="loading" class="hidden text-center py-12">
+     <div class="inline-block w-8 h-8 border-2 border-[#ff5a5f] border-t-transparent rounded-full animate-spin"></div>
+     <p class="mt-3 text-[#8888aa] text-sm">Loading NFTs...</p>
     </div>
-   </main>
-  </div><!-- Modal -->
-  <div id="modal" class="modal-backdrop" onclick="closeModal(event)">
-   <div class="relative max-w-lg w-full mx-4 rounded-2xl overflow-hidden" style="background:#12122a; border:1px solid rgba(255,255,255,0.08);" onclick="event.stopPropagation()">
-    <button onclick="closeModal()" class="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition"> <i data-lucide="x" class="w-4 h-4"></i> </button>
-    <div class="relative">
-     <div id="modalImgWrap" class="w-full aspect-square bg-gray-900 relative overflow-hidden">
-      <img id="modalImg" class="w-full h-full object-cover riso-filter" src="" alt="">
-      <div class="riso-effect" id="modalEffect"></div>
+   </main><!-- Modal -->
+   <div id="modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
+    <div class="modal-backdrop absolute inset-0 bg-black/70 backdrop-blur-sm" id="modal-backdrop"></div>
+    <div class="relative bg-[#1e1e38] rounded-2xl max-w-lg w-full max-h-[90%] overflow-auto shadow-2xl border border-[#3a3a5a]">
+     <button id="modal-close" class="absolute top-3 right-3 z-10 bg-[#2a2a4a] rounded-full p-2 hover:bg-[#ff5a5f] transition"> <i data-lucide="x" class="w-4 h-4"></i> </button>
+     <div id="modal-img-wrap" class="relative overflow-hidden rounded-t-2xl riso-overlay">
+      <img id="modal-img" class="w-full aspect-square object-cover riso-filter nft-img" src="" alt="NFT">
      </div>
-     <div class="absolute bottom-3 left-3 z-10 flex gap-2">
-      <button id="orgBtn" onclick="toggleOriginal()" class="px-4 py-2 rounded-lg text-xs font-bold text-white transition" style="background:rgba(0,0,0,0.6); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,0.15);"> <span id="orgLabel">ORG</span> </button> <a id="ipfsLink" href="#" target="_blank" rel="noopener noreferrer" class="px-4 py-2 rounded-lg text-xs font-bold text-white transition flex items-center gap-1" style="background:rgba(0,0,0,0.6); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,0.15);"> <i data-lucide="external-link" class="w-3 h-3"></i> IPFS </a>
-     </div>
-    </div>
-    <div id="modalInfo" class="p-5">
-     <h2 id="modalTitle" class="text-xl font-bold" style="font-family:'Space Mono',monospace; color:#e3405a;"></h2>
-     <div id="modalTraits" class="mt-3 flex flex-wrap"></div>
-     <div id="modalLoading" class="mt-3 text-sm text-gray-500">
-      Loading traits...
+     <div class="p-5">
+      <div class="flex items-center justify-between mb-4">
+       <h2 id="modal-title" class="mono text-lg font-bold text-[#ff5a5f]"></h2><button id="toggle-original" class="mono text-xs bg-[#2a2a4a] hover:bg-[#ff5a5f] hover:text-white px-3 py-1.5 rounded-full transition font-bold">ORG</button>
+      </div>
+      <div id="modal-traits" class="grid grid-cols-2 gap-2"></div>
      </div>
     </div>
    </div>
   </div>
   <script>
-const IPFS_BASE = 'QmPMc4tcBsMqLRuCQtPmPe84bpSjrC3Ky7t3JWuHXYB4aS';
-const GATEWAYS = [
-  'https://ipfs.io/ipfs/',
-  'https://cloudflare-ipfs.com/ipfs/',
-  'https://gateway.pinata.cloud/ipfs/'
-];
-let currentGatewayIndex = 0;
+    const IPFS_GATEWAY = 'https://ipfs.io/ipfs/';
+    const BASE_HASH = 'QmPMc4tcBsMqLRuCQtPmPe84bpSjrC3Ky7t3JWuHXYB4aS';
+    const PER_PAGE = 20;
+    let currentPage = 1;
+    let isRiso = true;
+    let cache = {};
+    let risoCache = {};
 
-function getGateway() {
-  return GATEWAYS[currentGatewayIndex];
-}
+    const defaultConfig = {
+      gallery_title: 'Risograph NFT Gallery',
+      subtitle_text: '10,000 NFTs reimagined in Risograph style',
+      background_color: '#1a1a2e',
+      accent_color: '#ff5a5f',
+      surface_color: '#2a2a4a',
+      text_color: '#e0e0e0',
+      muted_color: '#8888aa',
+      font_family: 'DM Sans',
+      font_size: 16
+    };
 
-const START = 1, END = 9998, PER_PAGE = 50;
-let currentPage = 0, totalPages = Math.ceil((END - START + 1) / PER_PAGE);
-let showingOriginal = false;
-let currentModalId = null;
-let traitsCache = {};
+    function getMetadataUrl(id) {
+      return `${IPFS_GATEWAY}${BASE_HASH}/${id}`;
+    }
 
-const defaultConfig = {
-  collection_name: 'Risograph NFT Viewer',
-  ipfs_base: 'QmPMc4tcBsMqLRuCQtPmPe84bpSjrC3Ky7t3JWuHXYB4aS',
-  background_color: '#0d0d1a',
-  accent_color: '#e3405a',
-  card_color: '#12122a',
-  text_color: '#e5e5e5',
-  muted_color: '#6b7280',
-  font_family: 'Space Mono',
-  font_size: 16
-};
-
-function applyConfig(config) {
-  const c = { ...defaultConfig, ...config };
-  document.getElementById('mainTitle').textContent = c.collection_name;
-  document.body.style.background = c.background_color;
-  document.getElementById('mainTitle').style.color = c.accent_color;
-  document.getElementById('searchBtn').style.background = c.accent_color;
-  
-  const font = c.font_family || defaultConfig.font_family;
-  document.getElementById('mainTitle').style.fontFamily = `${font}, monospace`;
-  
-  document.querySelectorAll('.nft-title').forEach(el => el.style.color = c.accent_color);
-}
-
-window.elementSdk.init({
-  defaultConfig,
-  onConfigChange: async (config) => applyConfig(config),
-  mapToCapabilities: (config) => ({
-    recolorables: [
-      { get: () => config.background_color || defaultConfig.background_color, set: v => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
-      { get: () => config.card_color || defaultConfig.card_color, set: v => { config.card_color = v; window.elementSdk.setConfig({ card_color: v }); } },
-      { get: () => config.text_color || defaultConfig.text_color, set: v => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
-      { get: () => config.accent_color || defaultConfig.accent_color, set: v => { config.accent_color = v; window.elementSdk.setConfig({ accent_color: v }); } },
-      { get: () => config.muted_color || defaultConfig.muted_color, set: v => { config.muted_color = v; window.elementSdk.setConfig({ muted_color: v }); } },
-    ],
-    borderables: [],
-    fontEditable: { get: () => config.font_family || defaultConfig.font_family, set: v => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); } },
-    fontSizeable: { get: () => config.font_size || defaultConfig.font_size, set: v => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); } },
-  }),
-  mapToEditPanelValues: (config) => new Map([
-    ['collection_name', config.collection_name || defaultConfig.collection_name],
-    ['ipfs_base', config.ipfs_base || defaultConfig.ipfs_base],
-  ])
-});
-
-function getImageUrl(id) {
-  const base = window.elementSdk.config.ipfs_base || IPFS_BASE;
-  return `${getGateway()}${base}/${id}`;
-}
-
-function getMetaUrl(id) {
-  const base = window.elementSdk.config.ipfs_base || IPFS_BASE;
-  return `${getGateway()}${base}/${id}`;
-}
-
-function retryWithNextGateway() {
-  currentGatewayIndex = (currentGatewayIndex + 1) % GATEWAYS.length;
-}
-
-function renderGrid() {
-  const grid = document.getElementById('grid');
-  grid.innerHTML = '';
-  const start = START + currentPage * PER_PAGE;
-  const end = Math.min(start + PER_PAGE - 1, END);
-
-  for (let i = start; i <= end; i++) {
-    const card = document.createElement('div');
-    card.className = 'riso-card card-hover cursor-pointer fade-up';
-    card.style.animationDelay = `${(i - start) * 30}ms`;
-    card.style.background = '#12122a';
-    card.style.border = '1px solid rgba(255,255,255,0.06)';
-    card.innerHTML = `
-      <div class="relative aspect-square overflow-hidden bg-gray-900">
-        <div class="skeleton w-full h-full absolute inset-0"></div>
-        <img data-id="${i}" src="${getImageUrl(i)}" alt="NFT #${i}" loading="lazy" 
-          class="w-full h-full object-cover riso-filter"
-          onerror="handleImageError(this, ${i})"
-        >
-        <div class="riso-effect"></div>
-      </div>
-      <div class="p-3">
-        <p class="nft-title text-sm font-bold" style="font-family:'Space Mono',monospace; color:#e3405a;">#${i}</p>
-      </div>
-    `;
-    card.addEventListener('click', () => openModal(i));
-    grid.appendChild(card);
-  }
-
-  const info = `Page ${currentPage + 1} of ${totalPages} • Showing #${start}–#${end}`;
-  document.getElementById('pageInfo').textContent = info;
-  document.getElementById('pageInfo2').textContent = info;
-
-  document.getElementById('prevBtn').disabled = currentPage === 0;
-  document.getElementById('prevBtn2').disabled = currentPage === 0;
-  document.getElementById('nextBtn').disabled = currentPage >= totalPages - 1;
-  document.getElementById('nextBtn2').disabled = currentPage >= totalPages - 1;
-
-  lucide.createIcons();
-}
-
-function handleImageError(img, id) {
-  const skeleton = img.previousElementSibling;
-  const attempts = img.dataset.attempts || 0;
-
-  if (attempts < GATEWAYS.length - 1) {
-    img.dataset.attempts = attempts + 1;
-    retryWithNextGateway();
-    img.src = getImageUrl(id);
-  } else {
-    skeleton.innerHTML = '<div class="flex items-center justify-center h-full text-xs text-red-400">⚠</div>';
-  }
-}
-
-function changePage(dir) {
-  currentPage = Math.max(0, Math.min(totalPages - 1, currentPage + dir));
-  renderGrid();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function goToPage(p) {
-  currentPage = Math.max(0, Math.min(totalPages - 1, p));
-  renderGrid();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function jumpToRange(num) {
-  const page = Math.floor((num - START) / PER_PAGE);
-  goToPage(page);
-}
-
-function openModal(id) {
-  currentModalId = id;
-  showingOriginal = false;
-  const modal = document.getElementById('modal');
-  const img = document.getElementById('modalImg');
-  const effect = document.getElementById('modalEffect');
-
-  img.className = 'w-full h-full object-cover riso-filter';
-  effect.style.display = 'block';
-  document.getElementById('orgLabel').textContent = 'ORG';
-
-  img.src = getImageUrl(id);
-  img.dataset.attempts = 0;
-  img.onerror = function() { handleImageError(this, id); };
-  
-  document.getElementById('modalTitle').textContent = `NFT #${id}`;
-  const base = window.elementSdk.config.ipfs_base || IPFS_BASE;
-  document.getElementById('ipfsLink').href = `${getGateway()}${base}/${id}`;
-  
-  const traitsDiv = document.getElementById('modalTraits');
-  const loadingDiv = document.getElementById('modalLoading');
-  traitsDiv.innerHTML = '';
-  loadingDiv.style.display = 'block';
-
-  modal.classList.add('active');
-  document.body.style.overflow = 'hidden';
-
-  if (traitsCache[id]) {
-    renderTraits(traitsCache[id]);
-  } else {
-    fetchTraits(id);
-  }
-
-  lucide.createIcons();
-}
-
-function fetchTraits(id, gatewayIdx = 0) {
-  if (gatewayIdx >= GATEWAYS.length) {
-    document.getElementById('modalLoading').textContent = 'No trait data found';
-    return;
-  }
-
-  const base = window.elementSdk.config.ipfs_base || IPFS_BASE;
-  const url = `${GATEWAYS[gatewayIdx]}${base}/${id}`;
-
-  fetch(url)
-    .then(r => {
-      const ct = r.headers.get('content-type') || '';
-      if (ct.includes('application/json')) return r.json();
-      return r.text().then(t => { try { return JSON.parse(t); } catch(e) { return null; } });
-    })
-    .then(data => {
-      if (data && data.attributes) {
-        traitsCache[id] = data.attributes;
-        renderTraits(data.attributes);
-      } else {
-        throw new Error('No attributes');
+    async function fetchNFT(id) {
+      if (cache[id]) return cache[id];
+      try {
+        const res = await fetch(getMetadataUrl(id));
+        const data = await res.json();
+        cache[id] = data;
+        return data;
+      } catch(e) {
+        return null;
       }
-    })
-    .catch(() => {
-      fetchTraits(id, gatewayIdx + 1);
+    }
+
+    function getImageUrl(ipfsUri) {
+      if (!ipfsUri) return '';
+      return ipfsUri.replace('ipfs://', IPFS_GATEWAY);
+    }
+
+    async function createRisographCanvas(imgSrc) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d', { willReadFrequently: true });
+          
+          ctx.drawImage(img, 0, 0);
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const data = imageData.data;
+
+          // Risograph effect through pixel manipulation
+          for (let i = 0; i < data.length; i += 4) {
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+            
+            // Convert to grayscale
+            const gray = r * 0.299 + g * 0.587 + b * 0.114;
+            
+            // Increase contrast
+            const contrast = 1.6;
+            const brightened = (gray - 128) * contrast + 128;
+            const saturated = Math.max(0, Math.min(255, brightened * 1.15));
+            
+            // Apply color channels for risograph look
+            data[i] = saturated * 1.1; // Red boost
+            data[i + 1] = saturated * 0.9; // Green reduce
+            data[i + 2] = saturated * 1.05; // Blue boost
+            data[i + 3] = 255; // Full alpha
+          }
+
+          // Add halftone pattern
+          for (let i = 0; i < data.length; i += 4) {
+            const pos = i / 4;
+            const x = pos % canvas.width;
+            const y = Math.floor(pos / canvas.width);
+            
+            if ((x + y) % 4 === 0) {
+              data[i] = Math.max(0, data[i] - 8);
+              data[i + 1] = Math.max(0, data[i + 1] - 8);
+              data[i + 2] = Math.max(0, data[i + 2] - 8);
+            }
+          }
+
+          ctx.putImageData(imageData, 0, 0);
+          resolve(canvas.toDataURL('image/png'));
+        };
+        img.onerror = () => resolve(null);
+        img.src = imgSrc;
+      });
+    }
+
+    function renderGrid(page) {
+      const grid = document.getElementById('grid');
+      const loading = document.getElementById('loading');
+      grid.innerHTML = '';
+      loading.classList.remove('hidden');
+
+      const start = (page - 1) * PER_PAGE + 1;
+      const end = Math.min(start + PER_PAGE - 1, 9998);
+      const ids = [];
+      for (let i = start; i <= end; i++) ids.push(i);
+
+      let loaded = 0;
+      ids.forEach((id, idx) => {
+        fetchNFT(id).then(async data => {
+          loaded++;
+          if (data) {
+            const imgUrl = getImageUrl(data.image);
+            
+            // Create risograph version
+            let risoUrl = risoCache[id];
+            if (!risoUrl) {
+              risoUrl = await createRisographCanvas(imgUrl);
+              if (risoUrl) risoCache[id] = risoUrl;
+            }
+
+            const card = document.createElement('div');
+            card.className = 'card-enter cursor-pointer group';
+            card.style.animationDelay = `${idx * 40}ms`;
+            card.innerHTML = `
+              <div class="relative rounded-xl overflow-hidden bg-[#2a2a4a] riso-overlay" data-riso="${risoUrl || ''}" data-original="${imgUrl}">
+                <img 
+                  src="${risoUrl || imgUrl}" 
+                  alt="${data.name || '#'+id}" 
+                  class="w-full aspect-square object-cover nft-img" 
+                  loading="lazy"
+                  onerror="this.style.background='#2a2a4a';this.alt='Failed to load';">
+                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
+                  <p class="mono text-xs font-bold text-white truncate">${data.name || '#'+id}</p>
+                </div>
+              </div>
+            `;
+            card.addEventListener('click', () => openModal(id, data, risoUrl, imgUrl));
+            grid.appendChild(card);
+          }
+          if (loaded === ids.length) loading.classList.add('hidden');
+        });
+      });
+    }
+
+    function openModal(id, data, risoUrl, originalUrl) {
+      const modal = document.getElementById('modal');
+      const img = document.getElementById('modal-img');
+      const title = document.getElementById('modal-title');
+      const traits = document.getElementById('modal-traits');
+      const wrap = document.getElementById('modal-img-wrap');
+
+      img.src = risoUrl || originalUrl;
+      img.dataset.riso = risoUrl;
+      img.dataset.original = originalUrl;
+      title.textContent = data.name || `#${id}`;
+      isRiso = true;
+      img.classList.add('riso-filter');
+      wrap.classList.add('riso-overlay');
+
+      traits.innerHTML = '';
+      if (data.attributes && data.attributes.length) {
+        data.attributes.forEach(attr => {
+          traits.innerHTML += `
+            <div class="bg-[#2a2a4a] rounded-lg p-3">
+              <p class="text-[10px] uppercase tracking-wider text-[#8888aa] mb-1">${attr.trait_type || 'Trait'}</p>
+              <p class="mono text-sm font-bold text-[#ff5a5f]">${attr.value || '—'}</p>
+            </div>
+          `;
+        });
+      } else {
+        traits.innerHTML = '<p class="text-[#8888aa] text-sm col-span-2">No traits available</p>';
+      }
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    document.getElementById('modal-close').addEventListener('click', closeModal);
+    document.getElementById('modal-backdrop').addEventListener('click', closeModal);
+
+    document.getElementById('toggle-original').addEventListener('click', () => {
+      const img = document.getElementById('modal-img');
+      const wrap = document.getElementById('modal-img-wrap');
+      isRiso = !isRiso;
+      
+      if (isRiso) {
+        img.src = img.dataset.riso || img.dataset.original;
+        img.classList.add('riso-filter');
+        wrap.classList.add('riso-overlay');
+      } else {
+        img.src = img.dataset.original;
+        img.classList.remove('riso-filter');
+        wrap.classList.remove('riso-overlay');
+      }
     });
-}
 
-const traitColors = [
-  'rgba(227,64,90,0.15)', 'rgba(0,120,191,0.15)', 'rgba(255,190,50,0.15)',
-  'rgba(90,200,150,0.15)', 'rgba(180,100,220,0.15)', 'rgba(255,140,60,0.15)',
-];
-const traitBorders = [
-  'rgba(227,64,90,0.3)', 'rgba(0,120,191,0.3)', 'rgba(255,190,50,0.3)',
-  'rgba(90,200,150,0.3)', 'rgba(180,100,220,0.3)', 'rgba(255,140,60,0.3)',
-];
+    document.getElementById('prev-btn').addEventListener('click', () => {
+      if (currentPage > 1) { currentPage--; updatePage(); }
+    });
+    document.getElementById('next-btn').addEventListener('click', () => {
+      if (currentPage < 500) { currentPage++; updatePage(); }
+    });
+    document.getElementById('page-input').addEventListener('change', (e) => {
+      let v = parseInt(e.target.value);
+      if (v >= 1 && v <= 500) { currentPage = v; renderGrid(currentPage); }
+    });
+    document.getElementById('search-input').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const id = parseInt(e.target.value);
+        if (id >= 1 && id <= 9998) {
+          fetchNFT(id).then(async data => { 
+            if (data) {
+              const imgUrl = getImageUrl(data.image);
+              const risoUrl = await createRisographCanvas(imgUrl);
+              openModal(id, data, risoUrl, imgUrl);
+            }
+          });
+        }
+      }
+    });
 
-function renderTraits(attrs) {
-  const traitsDiv = document.getElementById('modalTraits');
-  document.getElementById('modalLoading').style.display = 'none';
-  traitsDiv.innerHTML = '';
+    function updatePage() {
+      document.getElementById('page-input').value = currentPage;
+      renderGrid(currentPage);
+    }
 
-  if (!Array.isArray(attrs)) attrs = Object.entries(attrs).map(([k, v]) => ({ trait_type: k, value: v }));
+    // Element SDK
+    window.elementSdk.init({
+      defaultConfig,
+      onConfigChange: async (config) => {
+        document.getElementById('main-title').textContent = config.gallery_title || defaultConfig.gallery_title;
+        document.getElementById('subtitle').textContent = config.subtitle_text || defaultConfig.subtitle_text;
+        const font = config.font_family || defaultConfig.font_family;
+        document.body.style.fontFamily = `${font}, sans-serif`;
+      },
+      mapToCapabilities: (config) => ({
+        recolorables: [
+          { get: () => config.background_color || defaultConfig.background_color, set: (v) => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); }},
+          { get: () => config.surface_color || defaultConfig.surface_color, set: (v) => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); }},
+          { get: () => config.text_color || defaultConfig.text_color, set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); }},
+          { get: () => config.accent_color || defaultConfig.accent_color, set: (v) => { config.accent_color = v; window.elementSdk.setConfig({ accent_color: v }); }},
+          { get: () => config.muted_color || defaultConfig.muted_color, set: (v) => { config.muted_color = v; window.elementSdk.setConfig({ muted_color: v }); }}
+        ],
+        borderables: [],
+        fontEditable: { get: () => config.font_family || defaultConfig.font_family, set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); }},
+        fontSizeable: { get: () => config.font_size || defaultConfig.font_size, set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); }}
+      }),
+      mapToEditPanelValues: (config) => new Map([
+        ['gallery_title', config.gallery_title || defaultConfig.gallery_title],
+        ['subtitle_text', config.subtitle_text || defaultConfig.subtitle_text]
+      ])
+    });
 
-  attrs.forEach((attr, i) => {
-    const ci = i % traitColors.length;
-    const tag = document.createElement('span');
-    tag.className = 'tag';
-    tag.style.background = traitColors[ci];
-    tag.style.border = `1px solid ${traitBorders[ci]}`;
-    tag.style.color = '#e5e5e5';
-    tag.innerHTML = `<span class="opacity-60">${attr.trait_type || 'Trait'}:</span> ${attr.value || 'N/A'}`;
-    traitsDiv.appendChild(tag);
-  });
-}
-
-function toggleOriginal() {
-  showingOriginal = !showingOriginal;
-  const img = document.getElementById('modalImg');
-  const effect = document.getElementById('modalEffect');
-
-  if (showingOriginal) {
-    img.className = 'w-full h-full object-cover';
-    effect.style.display = 'none';
-    document.getElementById('orgLabel').textContent = 'RISO';
-  } else {
-    img.className = 'w-full h-full object-cover riso-filter';
-    effect.style.display = 'block';
-    document.getElementById('orgLabel').textContent = 'ORG';
-  }
-}
-
-function closeModal(e) {
-  if (e && e.target && e.target !== document.getElementById('modal')) return;
-  document.getElementById('modal').classList.remove('active');
-  document.body.style.overflow = '';
-}
-
-document.getElementById('searchBtn').addEventListener('click', doSearch);
-document.getElementById('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); doSearch(); } });
-
-function doSearch() {
-  const val = parseInt(document.getElementById('searchInput').value.trim());
-  if (isNaN(val) || val < START || val > END) return;
-  openModal(val);
-}
-
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
-
-renderGrid();
-lucide.createIcons();
-</script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9faf67ad71737d0d',t:'MTc3ODY1MTYzMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+    // Init
+    renderGrid(1);
+    lucide.createIcons();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9fb01829a63b7d0d',t:'MTc3ODY1ODg1OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
