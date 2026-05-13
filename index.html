@@ -1,101 +1,374 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>PulseTap – Crypto Mining</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-</head>
-<body>
-    <div class="app-container">
-        <!-- Header -->
-        <div class="header">
-            <div class="user-info">
-                <span id="username">Loading...</span>
-                <span class="level-badge" id="levelBadge">Lv 1</span>
-            </div>
-            <div class="balance-card">
-                <span class="balance-label">💰 Balance</span>
-                <span class="balance-value" id="balance">0</span>
-                <span class="token-symbol">PULSE</span>
-            </div>
-        </div>
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Risograph NFT Gallery</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&amp;family=DM+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet">
+  <style>
+html,body{height:100%;margin:0;padding:0}
+*{box-sizing:border-box}
 
-        <!-- Tap Button Area -->
-        <div class="mining-area">
-            <div class="energy-bar">
-                <div class="energy-fill" id="energyFill" style="width: 100%"></div>
-                <span class="energy-text" id="energyText">1000/1000</span>
-            </div>
-            <div class="tap-button" id="tapButton">
-                <div class="ripple"></div>
-                <span class="lightning">⚡</span>
-            </div>
-            <div class="tap-value">+<span id="tapValue">1</span> per tap</div>
-        </div>
+.riso-filter {
+  filter: contrast(1.3) saturate(1.6) brightness(0.95);
+  mix-blend-mode: multiply;
+  position: relative;
+}
+.riso-filter::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0,0,0,0.03) 0px,
+    rgba(0,0,0,0.03) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  pointer-events: none;
+}
+.riso-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+}
+.riso-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(ellipse at 30% 20%, rgba(227,64,90,0.12) 0%, transparent 60%),
+    radial-gradient(ellipse at 70% 80%, rgba(0,120,191,0.1) 0%, transparent 60%);
+  z-index: 1;
+  pointer-events: none;
+  mix-blend-mode: color;
+}
+.riso-overlay {
+  position: absolute; inset:0; z-index:2; pointer-events:none;
+  background-image: url("data:image/svg+xml,%3Csvg width='4' height='4' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='1' height='1' fill='rgba(0,0,0,0.04)'/%3E%3C/svg%3E");
+}
 
-        <!-- Stats Row -->
-        <div class="stats-row">
-            <div class="stat">
-                <span class="stat-label">Total Mined</span>
-                <span class="stat-value" id="totalMined">0</span>
-            </div>
-            <div class="stat">
-                <span class="stat-label">Level</span>
-                <span class="stat-value" id="level">1</span>
-            </div>
-            <div class="stat">
-                <span class="stat-label">Next Level</span>
-                <span class="stat-value" id="nextLevelCost">100</span>
-            </div>
-        </div>
+.card-hover { transition: transform 0.25s ease, box-shadow 0.25s ease; }
+.card-hover:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.25); }
 
-        <!-- Upgrade Button -->
-        <button class="upgrade-btn" id="upgradeBtn">⬆️ Upgrade Mining Power</button>
+.modal-backdrop {
+  position: fixed; inset:0; background: rgba(0,0,0,0.85); z-index:50;
+  display:flex; align-items:center; justify-content:center;
+  opacity:0; pointer-events:none; transition: opacity 0.3s ease;
+}
+.modal-backdrop.active { opacity:1; pointer-events:auto; }
 
-        <!-- Tabs -->
-        <div class="tabs">
-            <button class="tab-btn active" data-tab="leaderboard">🏆 Leaderboard</button>
-            <button class="tab-btn" data-tab="referral">👥 Referral</button>
-            <button class="tab-btn" data-tab="missions">📋 Missions</button>
-        </div>
+.tag { display:inline-block; padding: 4px 10px; border-radius: 6px; font-size: 12px; margin: 3px; }
 
-        <!-- Tab Content -->
-        <div id="leaderboard" class="tab-content active">
-            <div class="leaderboard-list" id="leaderboardList">
-                <div class="loading">Loading top miners...</div>
-            </div>
-        </div>
+.skeleton {
+  background: linear-gradient(90deg, #1a1a2e 25%, #2a2a4e 50%, #1a1a2e 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
-        <div id="referral" class="tab-content">
-            <div class="referral-box">
-                <p>Invite friends & earn <strong>10%</strong> of their taps!</p>
-                <div class="referral-link-box">
-                    <input type="text" id="referralLink" readonly>
-                    <button id="copyLinkBtn">📋 Copy</button>
-                </div>
-                <div class="referral-stats">
-                    <span>👥 Referrals: <strong id="referralCount">0</strong></span>
-                    <span>🎁 Bonus Earned: <strong id="referralBonus">0</strong></span>
-                </div>
-            </div>
-        </div>
+@keyframes fadeUp {
+  from { opacity:0; transform: translateY(16px); }
+  to { opacity:1; transform: translateY(0); }
+}
+.fade-up { animation: fadeUp 0.4s ease forwards; }
 
-        <div id="missions" class="tab-content">
-            <div class="mission-list" id="missionList">
-                <div class="mission">
-                    <span>🏆 Tap 1000 times today</span>
-                    <span id="missionTapProgress">0/1000</span>
-                </div>
-                <div class="mission">
-                    <span>👥 Invite 1 friend</span>
-                    <span id="missionInviteProgress">0/1</span>
-                </div>
-            </div>
-        </div>
+.page-bg { background: #0d0d1a; }
+.search-glow:focus { box-shadow: 0 0 0 2px rgba(227,64,90,0.5); }
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #0d0d1a; }
+::-webkit-scrollbar-thumb { background: #2a2a4e; border-radius: 4px; }
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full page-bg text-gray-100 overflow-auto" style="font-family:'DM Sans',sans-serif">
+  <div id="app" class="w-full h-full flex flex-col"><!-- Header -->
+   <header class="w-full px-6 py-8 text-center" style="background: linear-gradient(180deg, #1a0a2e 0%, #0d0d1a 100%);">
+    <h1 id="mainTitle" class="text-4xl md:text-5xl font-bold tracking-tight" style="font-family:'Space Mono',monospace; color:#e3405a;">Risograph NFT Gallery</h1>
+    <p id="subtitle" class="mt-3 text-gray-400 text-lg">10,000 NFTs reimagined in Risograph style</p>
+    <div class="mt-6 max-w-xl mx-auto flex gap-3">
+     <div class="flex-1 relative"><i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500"></i> <input id="searchInput" type="text" placeholder="Search by token ID (e.g. 1, 42, 8491)..." class="w-full pl-10 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-gray-200 placeholder-gray-500 outline-none search-glow transition">
+     </div><button id="searchBtn" class="px-5 py-3 rounded-xl font-semibold text-white transition hover:brightness-110" style="background:#e3405a;"> Go </button>
     </div>
+    <div class="mt-4 flex justify-center gap-2 flex-wrap" id="quickNav"><button onclick="goToPage(0)" class="px-3 py-1 rounded-lg text-xs bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:border-white/30 transition">1-50</button> <button onclick="jumpToRange(100)" class="px-3 py-1 rounded-lg text-xs bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:border-white/30 transition">100+</button> <button onclick="jumpToRange(500)" class="px-3 py-1 rounded-lg text-xs bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:border-white/30 transition">500+</button> <button onclick="jumpToRange(1000)" class="px-3 py-1 rounded-lg text-xs bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:border-white/30 transition">1000+</button> <button onclick="jumpToRange(5000)" class="px-3 py-1 rounded-lg text-xs bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:border-white/30 transition">5000+</button> <button onclick="jumpToRange(9000)" class="px-3 py-1 rounded-lg text-xs bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:border-white/30 transition">9000+</button>
+    </div>
+   </header><!-- Grid -->
+   <main class="flex-1 w-full max-w-7xl mx-auto px-4 py-6">
+    <div class="flex items-center justify-between mb-4">
+     <p id="pageInfo" class="text-sm text-gray-500"></p>
+     <div class="flex gap-2"><button id="prevBtn" onclick="changePage(-1)" class="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-gray-400 hover:text-white transition disabled:opacity-30" disabled> <i data-lucide="chevron-left" class="w-4 h-4"></i> </button> <button id="nextBtn" onclick="changePage(1)" class="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-gray-400 hover:text-white transition disabled:opacity-30"> <i data-lucide="chevron-right" class="w-4 h-4"></i> </button>
+     </div>
+    </div>
+    <div id="grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
+    <div class="flex items-center justify-center mt-6 gap-2"><button id="prevBtn2" onclick="changePage(-1)" class="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-gray-400 hover:text-white transition disabled:opacity-30" disabled>Previous</button> <span id="pageInfo2" class="text-sm text-gray-500 mx-4"></span> <button id="nextBtn2" onclick="changePage(1)" class="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-gray-400 hover:text-white transition disabled:opacity-30">Next</button>
+    </div>
+   </main>
+  </div><!-- Modal -->
+  <div id="modal" class="modal-backdrop" onclick="closeModal(event)">
+   <div class="relative max-w-lg w-full mx-4 rounded-2xl overflow-hidden" style="background:#12122a; border:1px solid rgba(255,255,255,0.08);" onclick="event.stopPropagation()"><button onclick="closeModal()" class="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition"> <i data-lucide="x" class="w-4 h-4"></i> </button>
+    <div class="relative">
+     <div id="modalImgWrap" class="w-full aspect-square bg-gray-900 relative overflow-hidden"><img id="modalImg" class="w-full h-full object-cover riso-filter" src="" alt="">
+      <div class="riso-overlay" id="modalOverlay"></div>
+     </div>
+     <div class="absolute bottom-3 left-3 z-10 flex gap-2"><button id="orgBtn" onclick="toggleOriginal()" class="px-4 py-2 rounded-lg text-xs font-bold text-white transition" style="background:rgba(0,0,0,0.6); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,0.15);"> <span id="orgLabel">ORG</span> </button> <a id="ipfsLink" href="#" target="_blank" rel="noopener noreferrer" class="px-4 py-2 rounded-lg text-xs font-bold text-white transition flex items-center gap-1" style="background:rgba(0,0,0,0.6); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,0.15);"> <i data-lucide="external-link" class="w-3 h-3"></i> IPFS </a>
+     </div>
+    </div>
+    <div id="modalInfo" class="p-5">
+     <h2 id="modalTitle" class="text-xl font-bold" style="font-family:'Space Mono',monospace; color:#e3405a;"></h2>
+     <div id="modalTraits" class="mt-3 flex flex-wrap"></div>
+     <div id="modalLoading" class="mt-3 text-sm text-gray-500">
+      Loading traits...
+     </div>
+    </div>
+   </div>
+  </div>
+  <script>
+const IPFS_BASE = 'QmPMc4tcBsMqLRuCQtPmPe84bpSjrC3Ky7t3JWuHXYB4aS';
+const GATEWAY = 'https://ipfs.io/ipfs/';
+const START = 1, END = 9998, PER_PAGE = 50;
+let currentPage = 0, totalPages = Math.ceil((END - START + 1) / PER_PAGE);
+let showingOriginal = false;
+let currentModalId = null;
+let traitsCache = {};
 
-    <script src="app.js"></script>
-</body>
+const defaultConfig = {
+  gallery_title: 'Risograph NFT Gallery',
+  subtitle_text: '10,000 NFTs reimagined in Risograph style',
+  background_color: '#0d0d1a',
+  accent_color: '#e3405a',
+  card_color: '#12122a',
+  text_color: '#e5e5e5',
+  muted_color: '#6b7280',
+  font_family: 'Space Mono',
+  font_size: 16
+};
+
+function applyConfig(config) {
+  const c = { ...defaultConfig, ...config };
+  document.getElementById('mainTitle').textContent = c.gallery_title;
+  document.getElementById('subtitle').textContent = c.subtitle_text;
+  document.body.style.background = c.background_color;
+  document.getElementById('mainTitle').style.color = c.accent_color;
+  document.getElementById('searchBtn').style.background = c.accent_color;
+  
+  const font = c.font_family || defaultConfig.font_family;
+  document.getElementById('mainTitle').style.fontFamily = `${font}, monospace`;
+  
+  document.querySelectorAll('.nft-title').forEach(el => el.style.color = c.accent_color);
+}
+
+window.elementSdk.init({
+  defaultConfig,
+  onConfigChange: async (config) => applyConfig(config),
+  mapToCapabilities: (config) => ({
+    recolorables: [
+      { get: () => config.background_color || defaultConfig.background_color, set: v => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
+      { get: () => config.card_color || defaultConfig.card_color, set: v => { config.card_color = v; window.elementSdk.setConfig({ card_color: v }); } },
+      { get: () => config.text_color || defaultConfig.text_color, set: v => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+      { get: () => config.accent_color || defaultConfig.accent_color, set: v => { config.accent_color = v; window.elementSdk.setConfig({ accent_color: v }); } },
+      { get: () => config.muted_color || defaultConfig.muted_color, set: v => { config.muted_color = v; window.elementSdk.setConfig({ muted_color: v }); } },
+    ],
+    borderables: [],
+    fontEditable: { get: () => config.font_family || defaultConfig.font_family, set: v => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); } },
+    fontSizeable: { get: () => config.font_size || defaultConfig.font_size, set: v => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); } },
+  }),
+  mapToEditPanelValues: (config) => new Map([
+    ['gallery_title', config.gallery_title || defaultConfig.gallery_title],
+    ['subtitle_text', config.subtitle_text || defaultConfig.subtitle_text],
+  ])
+});
+
+function getImageUrl(id) {
+  return `${GATEWAY}${IPFS_BASE}/${id}`;
+}
+
+function getMetaUrl(id) {
+  return `${GATEWAY}${IPFS_BASE}/${id}`;
+}
+
+function renderGrid() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  const start = START + currentPage * PER_PAGE;
+  const end = Math.min(start + PER_PAGE - 1, END);
+
+  for (let i = start; i <= end; i++) {
+    const card = document.createElement('div');
+    card.className = 'riso-card card-hover cursor-pointer fade-up';
+    card.style.animationDelay = `${(i - start) * 30}ms`;
+    card.style.background = '#12122a';
+    card.style.border = '1px solid rgba(255,255,255,0.06)';
+    card.innerHTML = `
+      <div class="relative aspect-square overflow-hidden">
+        <div class="skeleton w-full h-full absolute inset-0"></div>
+        <img src="${getImageUrl(i)}" alt="NFT #${i}" loading="lazy" 
+          class="w-full h-full object-cover riso-filter relative z-[1]"
+          onload="this.previousElementSibling.style.display='none'"
+          onerror="this.previousElementSibling.innerHTML='<div class=\\'flex items-center justify-center h-full text-gray-600 text-xs\\'>Failed</div>'"
+        >
+        <div class="riso-overlay"></div>
+      </div>
+      <div class="p-3">
+        <p class="nft-title text-sm font-bold" style="font-family:'Space Mono',monospace; color:#e3405a;">#${i}</p>
+      </div>
+    `;
+    card.addEventListener('click', () => openModal(i));
+    grid.appendChild(card);
+  }
+
+  const info = `Page ${currentPage + 1} of ${totalPages} • Showing #${start}–#${end}`;
+  document.getElementById('pageInfo').textContent = info;
+  document.getElementById('pageInfo2').textContent = info;
+
+  document.getElementById('prevBtn').disabled = currentPage === 0;
+  document.getElementById('prevBtn2').disabled = currentPage === 0;
+  document.getElementById('nextBtn').disabled = currentPage >= totalPages - 1;
+  document.getElementById('nextBtn2').disabled = currentPage >= totalPages - 1;
+
+  lucide.createIcons();
+}
+
+function changePage(dir) {
+  currentPage = Math.max(0, Math.min(totalPages - 1, currentPage + dir));
+  renderGrid();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function goToPage(p) {
+  currentPage = Math.max(0, Math.min(totalPages - 1, p));
+  renderGrid();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function jumpToRange(num) {
+  const page = Math.floor((num - START) / PER_PAGE);
+  goToPage(page);
+}
+
+function openModal(id) {
+  currentModalId = id;
+  showingOriginal = false;
+  const modal = document.getElementById('modal');
+  const img = document.getElementById('modalImg');
+  const overlay = document.getElementById('modalOverlay');
+
+  img.className = 'w-full h-full object-cover riso-filter relative z-[1]';
+  overlay.style.display = 'block';
+  document.getElementById('orgLabel').textContent = 'ORG';
+
+  img.src = getImageUrl(id);
+  document.getElementById('modalTitle').textContent = `NFT #${id}`;
+  document.getElementById('ipfsLink').href = `${GATEWAY}${IPFS_BASE}/${id}`;
+  
+  const traitsDiv = document.getElementById('modalTraits');
+  const loadingDiv = document.getElementById('modalLoading');
+  traitsDiv.innerHTML = '';
+  loadingDiv.style.display = 'block';
+
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+
+  // Fetch metadata for traits
+  if (traitsCache[id]) {
+    renderTraits(traitsCache[id]);
+  } else {
+    fetch(getMetaUrl(id))
+      .then(r => {
+        const ct = r.headers.get('content-type') || '';
+        if (ct.includes('application/json')) return r.json();
+        return r.text().then(t => { try { return JSON.parse(t); } catch(e) { return null; } });
+      })
+      .then(data => {
+        if (data && data.attributes) {
+          traitsCache[id] = data.attributes;
+          renderTraits(data.attributes);
+          // If image URL is in metadata, we could use it
+          if (data.image) {
+            const imgUrl = data.image.startsWith('ipfs://') 
+              ? data.image.replace('ipfs://', GATEWAY) 
+              : data.image;
+            img.src = imgUrl;
+          }
+        } else {
+          loadingDiv.textContent = 'No trait data found in metadata';
+        }
+      })
+      .catch(() => {
+        loadingDiv.textContent = 'Could not load traits (IPFS may be slow)';
+      });
+  }
+
+  lucide.createIcons();
+}
+
+const traitColors = [
+  'rgba(227,64,90,0.15)', 'rgba(0,120,191,0.15)', 'rgba(255,190,50,0.15)',
+  'rgba(90,200,150,0.15)', 'rgba(180,100,220,0.15)', 'rgba(255,140,60,0.15)',
+];
+const traitBorders = [
+  'rgba(227,64,90,0.3)', 'rgba(0,120,191,0.3)', 'rgba(255,190,50,0.3)',
+  'rgba(90,200,150,0.3)', 'rgba(180,100,220,0.3)', 'rgba(255,140,60,0.3)',
+];
+
+function renderTraits(attrs) {
+  const traitsDiv = document.getElementById('modalTraits');
+  document.getElementById('modalLoading').style.display = 'none';
+  traitsDiv.innerHTML = '';
+
+  attrs.forEach((attr, i) => {
+    const ci = i % traitColors.length;
+    const tag = document.createElement('span');
+    tag.className = 'tag';
+    tag.style.background = traitColors[ci];
+    tag.style.border = `1px solid ${traitBorders[ci]}`;
+    tag.style.color = '#e5e5e5';
+    tag.innerHTML = `<span class="opacity-60">${attr.trait_type || 'Trait'}:</span> ${attr.value || 'N/A'}`;
+    traitsDiv.appendChild(tag);
+  });
+}
+
+function toggleOriginal() {
+  showingOriginal = !showingOriginal;
+  const img = document.getElementById('modalImg');
+  const overlay = document.getElementById('modalOverlay');
+
+  if (showingOriginal) {
+    img.className = 'w-full h-full object-cover relative z-[1]';
+    overlay.style.display = 'none';
+    document.getElementById('orgLabel').textContent = 'RISO';
+  } else {
+    img.className = 'w-full h-full object-cover riso-filter relative z-[1]';
+    overlay.style.display = 'block';
+    document.getElementById('orgLabel').textContent = 'ORG';
+  }
+}
+
+function closeModal(e) {
+  if (e && e.target && e.target !== document.getElementById('modal')) return;
+  document.getElementById('modal').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+// Search
+document.getElementById('searchBtn').addEventListener('click', doSearch);
+document.getElementById('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); doSearch(); } });
+
+function doSearch() {
+  const val = parseInt(document.getElementById('searchInput').value.trim());
+  if (isNaN(val) || val < START || val > END) return;
+  openModal(val);
+}
+
+// Close modal on Escape
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+renderGrid();
+lucide.createIcons();
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9faf3020170fa48e',t:'MTc3ODY0OTM1NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
