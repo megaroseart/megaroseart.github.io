@@ -1,422 +1,525 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en" class="h-full">
- <head>
+<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Risograph NFT Gallery</title>
+  <title>Risograph NFT Gallery | Sequential 1-10000</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
   <script src="/_sdk/element_sdk.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&amp;family=DM+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
   <style>
-    html, body { height: 100%; margin: 0; }
-    body { font-family: 'DM Sans', sans-serif; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #0a0a12; }
     .mono { font-family: 'Space Mono', monospace; }
-
-    .riso-filter {
-      filter: 
-        contrast(1.6) 
-        saturate(0.25) 
-        brightness(1.15)
-        hue-rotate(-5deg)
-        drop-shadow(0 0 1px rgba(0,0,0,0.2));
+    
+    /* Risograph effect overlays */
+    .riso-effect {
       position: relative;
     }
-
-    .riso-filter::before {
+    .riso-effect::after {
       content: '';
       position: absolute;
       inset: 0;
-      background: 
-        repeating-linear-gradient(
-          45deg,
-          transparent,
-          transparent 2px,
-          rgba(255,90,95,0.08) 2px,
-          rgba(255,90,95,0.08) 4px
-        ),
-        repeating-linear-gradient(
-          -45deg,
-          transparent,
-          transparent 2px,
-          rgba(0,120,255,0.06) 2px,
-          rgba(0,120,255,0.06) 4px
-        );
+      background: repeating-linear-gradient(45deg, rgba(255,80,90,0.12) 0px, rgba(255,80,90,0.12) 2px, transparent 2px, transparent 6px),
+                  repeating-linear-gradient(135deg, rgba(0,140,255,0.08) 0px, rgba(0,140,255,0.08) 3px, transparent 3px, transparent 8px);
       pointer-events: none;
-      mix-blend-mode: multiply;
-      z-index: 2;
-    }
-
-    .riso-filter::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: 
-        repeating-linear-gradient(
-          0deg,
-          rgba(0,0,0,0.04) 0px,
-          rgba(0,0,0,0.04) 1px,
-          transparent 1px,
-          transparent 2px
-        );
-      pointer-events: none;
-      z-index: 3;
       mix-blend-mode: overlay;
+      border-radius: inherit;
     }
-
-    .riso-overlay {
-      position: relative;
-      background: linear-gradient(135deg, rgba(255,90,95,0.12), rgba(0,120,255,0.08));
-    }
-
-    .riso-overlay::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: repeating-linear-gradient(
-        90deg,
-        rgba(0,0,0,0.02) 0px,
-        rgba(0,0,0,0.02) 1px,
-        transparent 1px,
-        transparent 3px
-      );
+    
+    .grain-overlay {
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
       pointer-events: none;
-      z-index: 2;
-      mix-blend-mode: multiply;
+      z-index: 10;
     }
-
-    .card-enter { animation: cardIn 0.4s ease forwards; opacity: 0; }
-    @keyframes cardIn {
-      from { opacity: 0; transform: translateY(20px); }
+    
+    .card {
+      transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    }
+    .card:hover {
+      transform: translateY(-6px);
+    }
+    
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(25px); }
       to { opacity: 1; transform: translateY(0); }
     }
-
-    .grain {
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    
+    .animate-in {
+      animation: fadeInUp 0.4s ease forwards;
     }
-
-    .modal-backdrop {
-      animation: fadeIn 0.2s ease;
+    
+    .modal-open {
+      animation: modalFade 0.2s ease;
     }
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+    
+    @keyframes modalFade {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
     }
-
-    .nft-img { transition: filter 0.3s ease; }
-    .scrollbar-thin::-webkit-scrollbar { width: 6px; }
-    .scrollbar-thin::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+    
+    .image-toggle-btn {
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.2);
+      transition: all 0.2s;
+    }
+    .image-toggle-btn:hover {
+      background: #ff5a5f;
+      border-color: white;
+    }
+    
+    .scrollbar-custom::-webkit-scrollbar { width: 5px; }
+    .scrollbar-custom::-webkit-scrollbar-track { background: #1a1a2a; }
+    .scrollbar-custom::-webkit-scrollbar-thumb { background: #ff5a5f; border-radius: 10px; }
   </style>
-  <style>body { box-sizing: border-box; }</style>
-  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
- </head>
- <body class="h-full bg-[#1a1a2e] text-[#e0e0e0] overflow-auto scrollbar-thin">
-  <div id="app" class="w-full min-h-full grain">
-   <!-- Header -->
-   <header class="sticky top-0 z-30 backdrop-blur-md bg-[#1a1a2e]/80 border-b border-[#2a2a4a] px-6 py-4">
-    <div class="max-w-7xl mx-auto flex items-center justify-between">
-     <div>
-      <h1 id="main-title" class="mono text-2xl font-bold text-[#ff5a5f]">Risograph NFT Gallery</h1>
-      <p id="subtitle" class="text-sm text-[#8888aa] mt-1">10,000 NFTs reimagined in Risograph style</p>
-     </div>
-     <div class="flex items-center gap-3">
-      <div class="flex items-center bg-[#2a2a4a] rounded-lg overflow-hidden">
-       <button id="prev-btn" class="px-3 py-2 hover:bg-[#3a3a5a] transition"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
-       <div class="px-3 py-2 mono text-sm">
-        <span>Page </span><input id="page-input" type="number" min="1" max="500" value="1" class="w-12 bg-transparent text-center text-[#ff5a5f] outline-none mono"> / <span id="total-pages">500</span>
-       </div><button id="next-btn" class="px-3 py-2 hover:bg-[#3a3a5a] transition"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
-      </div><input id="search-input" type="number" placeholder="Go to #ID" min="1" max="9998" class="bg-[#2a2a4a] rounded-lg px-3 py-2 w-28 text-sm outline-none focus:ring-1 focus:ring-[#ff5a5f] mono">
-     </div>
-    </div>
-   </header><!-- Grid -->
-   <main class="max-w-7xl mx-auto px-6 py-8">
-    <div id="grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
-    <div id="loading" class="hidden text-center py-12">
-     <div class="inline-block w-8 h-8 border-2 border-[#ff5a5f] border-t-transparent rounded-full animate-spin"></div>
-     <p class="mt-3 text-[#8888aa] text-sm">Loading NFTs...</p>
-    </div>
-   </main><!-- Modal -->
-   <div id="modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
-    <div class="modal-backdrop absolute inset-0 bg-black/70 backdrop-blur-sm" id="modal-backdrop"></div>
-    <div class="relative bg-[#1e1e38] rounded-2xl max-w-lg w-full max-h-[90%] overflow-auto shadow-2xl border border-[#3a3a5a]">
-     <button id="modal-close" class="absolute top-3 right-3 z-10 bg-[#2a2a4a] rounded-full p-2 hover:bg-[#ff5a5f] transition"> <i data-lucide="x" class="w-4 h-4"></i> </button>
-     <div id="modal-img-wrap" class="relative overflow-hidden rounded-t-2xl riso-overlay">
-      <img id="modal-img" class="w-full aspect-square object-cover riso-filter nft-img" src="" alt="NFT">
-     </div>
-     <div class="p-5">
-      <div class="flex items-center justify-between mb-4">
-       <h2 id="modal-title" class="mono text-lg font-bold text-[#ff5a5f]"></h2><button id="toggle-original" class="mono text-xs bg-[#2a2a4a] hover:bg-[#ff5a5f] hover:text-white px-3 py-1.5 rounded-full transition font-bold">ORG</button>
+</head>
+<body class="scrollbar-custom overflow-x-hidden">
+  <div class="fixed inset-0 grain-overlay pointer-events-none z-0"></div>
+  
+  <div id="app" class="relative z-10 min-h-screen">
+    <!-- Header -->
+    <header class="sticky top-0 z-30 backdrop-blur-xl bg-[#0a0a12]/90 border-b border-white/10">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-1 h-6 bg-[#ff5a5f] rounded-full"></div>
+          <div>
+            <h1 id="main-title" class="mono text-xl sm:text-2xl font-bold bg-gradient-to-r from-[#ff6a6f] to-[#ff5a5f] bg-clip-text text-transparent">RISOGRAPH NFT</h1>
+            <p id="subtitle" class="text-xs text-gray-400">sequential archive · 1 to 9,998</p>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-3">
+          <!-- Pagination -->
+          <div class="flex items-center bg-[#16162a] rounded-full border border-[#ff5a5f]/30 overflow-hidden">
+            <button id="prev-btn" class="px-3 py-2 hover:bg-[#ff5a5f]/20 transition text-[#ff8a8f]"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+            <div class="flex items-center gap-1 px-2 mono text-sm">
+              <span class="text-gray-400">pg</span>
+              <input id="page-input" type="number" min="1" max="500" value="1" class="w-12 bg-transparent text-center text-[#ff5a5f] font-bold outline-none">
+              <span class="text-gray-400">/<span id="total-pages">500</span></span>
+            </div>
+            <button id="next-btn" class="px-3 py-2 hover:bg-[#ff5a5f]/20 transition"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+          </div>
+          
+          <!-- Direct ID jump -->
+          <input id="search-input" type="number" placeholder="ID #" min="1" max="9998" 
+                 class="w-28 bg-[#16162a] border border-[#2a2a4a] rounded-full px-4 py-2 text-sm outline-none focus:border-[#ff5a5f] transition text-white placeholder:text-gray-500 mono">
+        </div>
       </div>
-      <div id="modal-traits" class="grid grid-cols-2 gap-2"></div>
-     </div>
+    </header>
+
+    <!-- Gallery Grid -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+      <div id="grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-5"></div>
+      <div id="loading" class="hidden flex flex-col items-center justify-center py-20 gap-3">
+        <div class="w-10 h-10 border-3 border-[#ff5a5f]/30 border-t-[#ff5a5f] rounded-full animate-spin"></div>
+        <p class="mono text-sm text-gray-400">fetching riso prints...</p>
+      </div>
+    </main>
+
+    <!-- Modal -->
+    <div id="modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
+      <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" id="modal-backdrop"></div>
+      <div class="relative bg-[#12121f] rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-auto border border-white/20 modal-open">
+        <!-- Image area with toggle button INSIDE -->
+        <div class="relative group">
+          <div id="modal-img-wrapper" class="relative overflow-hidden bg-[#0a0a12] rounded-t-2xl">
+            <img id="modal-img" class="w-full aspect-square object-cover" alt="NFT">
+          </div>
+          <!-- Toggle button positioned on image like a media viewer -->
+          <button id="toggle-original" class="absolute bottom-4 right-4 z-20 image-toggle-btn rounded-full px-4 py-2 text-xs font-bold flex items-center gap-2 shadow-lg">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+            <span id="toggle-text" class="mono">RISO MODE</span>
+          </button>
+          <button id="modal-close" class="absolute top-4 right-4 z-20 bg-black/50 backdrop-blur rounded-full p-2 hover:bg-[#ff5a5f] transition border border-white/20">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+        
+        <div class="p-5">
+          <h2 id="modal-title" class="mono text-xl font-bold text-[#ff5a5f] mb-4"></h2>
+          <div id="modal-traits" class="grid grid-cols-2 gap-2"></div>
+          <div class="mt-4 pt-3 border-t border-white/10 text-right">
+            <span class="text-[10px] text-gray-500 mono">✦ risograph spectral edition</span>
+          </div>
+        </div>
+      </div>
     </div>
-   </div>
   </div>
+
   <script>
+    // ======================== CONFIGURATION ========================
     const IPFS_GATEWAY = 'https://ipfs.io/ipfs/';
     const BASE_HASH = 'QmPMc4tcBsMqLRuCQtPmPe84bpSjrC3Ky7t3JWuHXYB4aS';
     const PER_PAGE = 20;
+    const TOTAL_NFTS = 9998;
+    const TOTAL_PAGES = Math.ceil(TOTAL_NFTS / PER_PAGE);
+    
     let currentPage = 1;
-    let isRiso = true;
-    let cache = {};
+    let currentModalState = { isRiso: true, risoUrl: null, originalUrl: null, meta: null, id: null };
+    
+    // Caches
+    let metadataCache = {};
     let risoCache = {};
-
+    
+    // Default config for SDK
     const defaultConfig = {
-      gallery_title: 'Risograph NFT Gallery',
-      subtitle_text: '10,000 NFTs reimagined in Risograph style',
-      background_color: '#1a1a2e',
+      gallery_title: 'RISOGRAPH NFT',
+      subtitle_text: 'sequential archive · 1 to 9,998',
+      background_color: '#0a0a12',
       accent_color: '#ff5a5f',
-      surface_color: '#2a2a4a',
-      text_color: '#e0e0e0',
-      muted_color: '#8888aa',
-      font_family: 'DM Sans',
+      surface_color: '#16162a',
+      text_color: '#ffffff',
+      muted_color: '#9ca3af',
+      font_family: 'Inter',
       font_size: 16
     };
-
+    
+    // ======================== UTILITIES ========================
     function getMetadataUrl(id) {
       return `${IPFS_GATEWAY}${BASE_HASH}/${id}`;
     }
-
-    async function fetchNFT(id) {
-      if (cache[id]) return cache[id];
-      try {
-        const res = await fetch(getMetadataUrl(id));
-        const data = await res.json();
-        cache[id] = data;
-        return data;
-      } catch(e) {
-        return null;
-      }
-    }
-
+    
     function getImageUrl(ipfsUri) {
       if (!ipfsUri) return '';
       return ipfsUri.replace('ipfs://', IPFS_GATEWAY);
     }
-
-    async function createRisographCanvas(imgSrc) {
+    
+    // Risograph effect using Canvas
+    async function applyRisographEffect(imgSrc) {
       return new Promise((resolve) => {
         const img = new Image();
-        img.crossOrigin = 'anonymous';
+        img.crossOrigin = 'Anonymous';
         img.onload = () => {
           const canvas = document.createElement('canvas');
           canvas.width = img.width;
           canvas.height = img.height;
-          const ctx = canvas.getContext('2d', { willReadFrequently: true });
+          const ctx = canvas.getContext('2d');
           
           ctx.drawImage(img, 0, 0);
           const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
           const data = imageData.data;
-
-          // Risograph effect through pixel manipulation
+          
+          // Apply risograph style: high contrast, duotone shift, halftone pattern
           for (let i = 0; i < data.length; i += 4) {
-            const r = data[i];
-            const g = data[i + 1];
-            const b = data[i + 2];
+            let r = data[i];
+            let g = data[i+1];
+            let b = data[i+2];
             
-            // Convert to grayscale
-            const gray = r * 0.299 + g * 0.587 + b * 0.114;
+            // Grayscale conversion
+            let gray = r * 0.3 + g * 0.59 + b * 0.11;
             
-            // Increase contrast
-            const contrast = 1.6;
-            const brightened = (gray - 128) * contrast + 128;
-            const saturated = Math.max(0, Math.min(255, brightened * 1.15));
+            // Boost contrast
+            let contrast = 1.5;
+            let contrasted = (gray - 128) * contrast + 128;
+            contrasted = Math.min(255, Math.max(0, contrasted));
             
-            // Apply color channels for risograph look
-            data[i] = saturated * 1.1; // Red boost
-            data[i + 1] = saturated * 0.9; // Green reduce
-            data[i + 2] = saturated * 1.05; // Blue boost
-            data[i + 3] = 255; // Full alpha
+            // Risograph duotone (reddish shadows, teal highlights)
+            let newR = contrasted * 1.15;
+            let newG = contrasted * 0.85;
+            let newB = contrasted * 0.9;
+            
+            data[i] = Math.min(255, newR);
+            data[i+1] = Math.min(255, newG);
+            data[i+2] = Math.min(255, newB);
           }
-
-          // Add halftone pattern
-          for (let i = 0; i < data.length; i += 4) {
-            const pos = i / 4;
-            const x = pos % canvas.width;
-            const y = Math.floor(pos / canvas.width);
-            
-            if ((x + y) % 4 === 0) {
-              data[i] = Math.max(0, data[i] - 8);
-              data[i + 1] = Math.max(0, data[i + 1] - 8);
-              data[i + 2] = Math.max(0, data[i + 2] - 8);
+          
+          // Add halftone dot pattern
+          for (let y = 0; y < canvas.height; y += 4) {
+            for (let x = 0; x < canvas.width; x += 4) {
+              const idx = (y * canvas.width + x) * 4;
+              const brightness = (data[idx] + data[idx+1] + data[idx+2]) / 3;
+              if (brightness > 120 && brightness < 220) {
+                for (let dy = 0; dy < 2; dy++) {
+                  for (let dx = 0; dx < 2; dx++) {
+                    const px = (y + dy) * canvas.width + (x + dx);
+                    const pixelIdx = px * 4;
+                    if (pixelIdx < data.length) {
+                      data[pixelIdx] = Math.max(0, data[pixelIdx] - 15);
+                      data[pixelIdx+1] = Math.max(0, data[pixelIdx+1] - 12);
+                      data[pixelIdx+2] = Math.max(0, data[pixelIdx+2] - 10);
+                    }
+                  }
+                }
+              }
             }
           }
-
+          
           ctx.putImageData(imageData, 0, 0);
-          resolve(canvas.toDataURL('image/png'));
+          resolve(canvas.toDataURL('image/jpeg', 0.9));
         };
-        img.onerror = () => resolve(null);
+        img.onerror = () => resolve(imgSrc);
         img.src = imgSrc;
       });
     }
-
-    function renderGrid(page) {
+    
+    async function getRisoVersion(id, originalUrl) {
+      if (risoCache[id]) return risoCache[id];
+      const risoUrl = await applyRisographEffect(originalUrl);
+      risoCache[id] = risoUrl;
+      return risoUrl;
+    }
+    
+    // Fetch metadata with timeout
+    async function fetchNFT(id) {
+      if (metadataCache[id]) return metadataCache[id];
+      
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+        
+        const response = await fetch(getMetadataUrl(id), { signal: controller.signal });
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        
+        // Validate and normalize metadata
+        const normalized = {
+          name: data.name || `NFT #${id}`,
+          image: getImageUrl(data.image || `ipfs://${BASE_HASH}/${id}.png`),
+          attributes: Array.isArray(data.attributes) ? data.attributes : []
+        };
+        
+        metadataCache[id] = normalized;
+        return normalized;
+      } catch (err) {
+        console.warn(`Failed to load NFT #${id}:`, err);
+        // Return fallback metadata
+        return {
+          name: `#${id}`,
+          image: `https://placehold.co/600x600/1a1a2a/ff5a5f?text=${id}`,
+          attributes: []
+        };
+      }
+    }
+    
+    // ======================== RENDER GRID ========================
+    async function renderGrid(page) {
       const grid = document.getElementById('grid');
       const loading = document.getElementById('loading');
+      
+      if (!grid) return;
+      
       grid.innerHTML = '';
       loading.classList.remove('hidden');
-
-      const start = (page - 1) * PER_PAGE + 1;
-      const end = Math.min(start + PER_PAGE - 1, 9998);
+      
+      const startId = (page - 1) * PER_PAGE + 1;
+      const endId = Math.min(startId + PER_PAGE - 1, TOTAL_NFTS);
       const ids = [];
-      for (let i = start; i <= end; i++) ids.push(i);
-
-      let loaded = 0;
-      ids.forEach((id, idx) => {
-        fetchNFT(id).then(async data => {
-          loaded++;
-          if (data) {
-            const imgUrl = getImageUrl(data.image);
-            
-            // Create risograph version
-            let risoUrl = risoCache[id];
-            if (!risoUrl) {
-              risoUrl = await createRisographCanvas(imgUrl);
-              if (risoUrl) risoCache[id] = risoUrl;
-            }
-
-            const card = document.createElement('div');
-            card.className = 'card-enter cursor-pointer group';
-            card.style.animationDelay = `${idx * 40}ms`;
-            card.innerHTML = `
-              <div class="relative rounded-xl overflow-hidden bg-[#2a2a4a] riso-overlay" data-riso="${risoUrl || ''}" data-original="${imgUrl}">
-                <img 
-                  src="${risoUrl || imgUrl}" 
-                  alt="${data.name || '#'+id}" 
-                  class="w-full aspect-square object-cover nft-img" 
-                  loading="lazy"
-                  onerror="this.style.background='#2a2a4a';this.alt='Failed to load';">
-                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
-                  <p class="mono text-xs font-bold text-white truncate">${data.name || '#'+id}</p>
-                </div>
+      for (let i = startId; i <= endId; i++) ids.push(i);
+      
+      let loadedCount = 0;
+      
+      for (let i = 0; i < ids.length; i++) {
+        const id = ids[i];
+        const metadata = await fetchNFT(id);
+        
+        if (metadata) {
+          const risoPreview = await getRisoVersion(id, metadata.image);
+          
+          const card = document.createElement('div');
+          card.className = 'card cursor-pointer animate-in';
+          card.style.animationDelay = `${i * 30}ms`;
+          
+          card.innerHTML = `
+            <div class="relative rounded-xl overflow-hidden bg-[#16162a] border border-white/10 hover:border-[#ff5a5f]/50 transition-all duration-300">
+              <img 
+                src="${risoPreview}" 
+                alt="${metadata.name}"
+                class="w-full aspect-square object-cover transition-transform duration-500 group-hover:scale-105"
+                loading="lazy"
+              />
+              <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-3">
+                <p class="mono text-sm font-bold text-white truncate">${escapeHtml(metadata.name)}</p>
+                <p class="text-[10px] text-[#ff8a8f] mono">#${id}</p>
               </div>
-            `;
-            card.addEventListener('click', () => openModal(id, data, risoUrl, imgUrl));
-            grid.appendChild(card);
-          }
-          if (loaded === ids.length) loading.classList.add('hidden');
-        });
-      });
-    }
-
-    function openModal(id, data, risoUrl, originalUrl) {
-      const modal = document.getElementById('modal');
-      const img = document.getElementById('modal-img');
-      const title = document.getElementById('modal-title');
-      const traits = document.getElementById('modal-traits');
-      const wrap = document.getElementById('modal-img-wrap');
-
-      img.src = risoUrl || originalUrl;
-      img.dataset.riso = risoUrl;
-      img.dataset.original = originalUrl;
-      title.textContent = data.name || `#${id}`;
-      isRiso = true;
-      img.classList.add('riso-filter');
-      wrap.classList.add('riso-overlay');
-
-      traits.innerHTML = '';
-      if (data.attributes && data.attributes.length) {
-        data.attributes.forEach(attr => {
-          traits.innerHTML += `
-            <div class="bg-[#2a2a4a] rounded-lg p-3">
-              <p class="text-[10px] uppercase tracking-wider text-[#8888aa] mb-1">${attr.trait_type || 'Trait'}</p>
-              <p class="mono text-sm font-bold text-[#ff5a5f]">${attr.value || '—'}</p>
             </div>
           `;
+          
+          card.addEventListener('click', () => openModal(id, metadata));
+          grid.appendChild(card);
+        }
+        
+        loadedCount++;
+        if (loadedCount === ids.length) {
+          loading.classList.add('hidden');
+        }
+      }
+    }
+    
+    // ======================== MODAL LOGIC ========================
+    async function openModal(id, metadata) {
+      const modal = document.getElementById('modal');
+      const modalImg = document.getElementById('modal-img');
+      const modalTitle = document.getElementById('modal-title');
+      const traitsContainer = document.getElementById('modal-traits');
+      const toggleText = document.getElementById('toggle-text');
+      const imgWrapper = document.getElementById('modal-img-wrapper');
+      
+      // Get both versions
+      const originalUrl = metadata.image;
+      const risoUrl = await getRisoVersion(id, originalUrl);
+      
+      currentModalState = {
+        isRiso: true,
+        risoUrl: risoUrl,
+        originalUrl: originalUrl,
+        meta: metadata,
+        id: id
+      };
+      
+      modalImg.src = risoUrl;
+      modalImg.classList.add('riso-effect');
+      imgWrapper.classList.add('riso-effect');
+      toggleText.innerText = 'RISO MODE';
+      
+      modalTitle.innerText = `${metadata.name} — #${id}`;
+      
+      // Render traits
+      traitsContainer.innerHTML = '';
+      if (metadata.attributes && metadata.attributes.length > 0) {
+        metadata.attributes.slice(0, 6).forEach(attr => {
+          const traitDiv = document.createElement('div');
+          traitDiv.className = 'bg-[#1e1e32] rounded-lg p-2.5 border border-white/5';
+          traitDiv.innerHTML = `
+            <p class="text-[9px] uppercase tracking-wider text-gray-400">${escapeHtml(attr.trait_type || 'property')}</p>
+            <p class="mono text-sm font-semibold text-[#ff8a8f] truncate">${escapeHtml(attr.value || '—')}</p>
+          `;
+          traitsContainer.appendChild(traitDiv);
         });
       } else {
-        traits.innerHTML = '<p class="text-[#8888aa] text-sm col-span-2">No traits available</p>';
+        traitsContainer.innerHTML = '<div class="col-span-2 text-center text-gray-400 text-sm">no traits available</div>';
       }
-
+      
       modal.classList.remove('hidden');
       modal.classList.add('flex');
     }
-
+    
     function closeModal() {
       const modal = document.getElementById('modal');
       modal.classList.add('hidden');
       modal.classList.remove('flex');
     }
-
-    document.getElementById('modal-close').addEventListener('click', closeModal);
-    document.getElementById('modal-backdrop').addEventListener('click', closeModal);
-
-    document.getElementById('toggle-original').addEventListener('click', () => {
-      const img = document.getElementById('modal-img');
-      const wrap = document.getElementById('modal-img-wrap');
-      isRiso = !isRiso;
+    
+    function toggleImageMode() {
+      const modalImg = document.getElementById('modal-img');
+      const toggleText = document.getElementById('toggle-text');
+      const imgWrapper = document.getElementById('modal-img-wrapper');
       
-      if (isRiso) {
-        img.src = img.dataset.riso || img.dataset.original;
-        img.classList.add('riso-filter');
-        wrap.classList.add('riso-overlay');
+      if (!currentModalState.risoUrl || !currentModalState.originalUrl) return;
+      
+      currentModalState.isRiso = !currentModalState.isRiso;
+      
+      if (currentModalState.isRiso) {
+        modalImg.src = currentModalState.risoUrl;
+        modalImg.classList.add('riso-effect');
+        imgWrapper.classList.add('riso-effect');
+        toggleText.innerText = 'RISO MODE';
       } else {
-        img.src = img.dataset.original;
-        img.classList.remove('riso-filter');
-        wrap.classList.remove('riso-overlay');
+        modalImg.src = currentModalState.originalUrl;
+        modalImg.classList.remove('riso-effect');
+        imgWrapper.classList.remove('riso-effect');
+        toggleText.innerText = 'ORIGINAL';
       }
-    });
-
-    document.getElementById('prev-btn').addEventListener('click', () => {
-      if (currentPage > 1) { currentPage--; updatePage(); }
-    });
-    document.getElementById('next-btn').addEventListener('click', () => {
-      if (currentPage < 500) { currentPage++; updatePage(); }
-    });
-    document.getElementById('page-input').addEventListener('change', (e) => {
-      let v = parseInt(e.target.value);
-      if (v >= 1 && v <= 500) { currentPage = v; renderGrid(currentPage); }
-    });
-    document.getElementById('search-input').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        const id = parseInt(e.target.value);
-        if (id >= 1 && id <= 9998) {
-          fetchNFT(id).then(async data => { 
-            if (data) {
-              const imgUrl = getImageUrl(data.image);
-              const risoUrl = await createRisographCanvas(imgUrl);
-              openModal(id, data, risoUrl, imgUrl);
-            }
-          });
-        }
-      }
-    });
-
+    }
+    
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+      });
+    }
+    
+    // ======================== PAGINATION ========================
     function updatePage() {
       document.getElementById('page-input').value = currentPage;
       renderGrid(currentPage);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-
-    // Element SDK
-    window.elementSdk.init({
-      defaultConfig,
-      onConfigChange: async (config) => {
-        document.getElementById('main-title').textContent = config.gallery_title || defaultConfig.gallery_title;
-        document.getElementById('subtitle').textContent = config.subtitle_text || defaultConfig.subtitle_text;
-        const font = config.font_family || defaultConfig.font_family;
-        document.body.style.fontFamily = `${font}, sans-serif`;
-      },
-      mapToCapabilities: (config) => ({
-        recolorables: [
-          { get: () => config.background_color || defaultConfig.background_color, set: (v) => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); }},
-          { get: () => config.surface_color || defaultConfig.surface_color, set: (v) => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); }},
-          { get: () => config.text_color || defaultConfig.text_color, set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); }},
-          { get: () => config.accent_color || defaultConfig.accent_color, set: (v) => { config.accent_color = v; window.elementSdk.setConfig({ accent_color: v }); }},
-          { get: () => config.muted_color || defaultConfig.muted_color, set: (v) => { config.muted_color = v; window.elementSdk.setConfig({ muted_color: v }); }}
-        ],
-        borderables: [],
-        fontEditable: { get: () => config.font_family || defaultConfig.font_family, set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); }},
-        fontSizeable: { get: () => config.font_size || defaultConfig.font_size, set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); }}
-      }),
-      mapToEditPanelValues: (config) => new Map([
-        ['gallery_title', config.gallery_title || defaultConfig.gallery_title],
-        ['subtitle_text', config.subtitle_text || defaultConfig.subtitle_text]
-      ])
+    
+    // ======================== EVENT LISTENERS ========================
+    document.getElementById('prev-btn')?.addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        updatePage();
+      }
     });
-
-    // Init
+    
+    document.getElementById('next-btn')?.addEventListener('click', () => {
+      if (currentPage < TOTAL_PAGES) {
+        currentPage++;
+        updatePage();
+      }
+    });
+    
+    document.getElementById('page-input')?.addEventListener('change', (e) => {
+      let val = parseInt(e.target.value);
+      if (val >= 1 && val <= TOTAL_PAGES) {
+        currentPage = val;
+        updatePage();
+      } else {
+        e.target.value = currentPage;
+      }
+    });
+    
+    document.getElementById('search-input')?.addEventListener('keydown', async (e) => {
+      if (e.key === 'Enter') {
+        const id = parseInt(e.target.value);
+        if (id >= 1 && id <= TOTAL_NFTS) {
+          const metadata = await fetchNFT(id);
+          if (metadata) {
+            await openModal(id, metadata);
+          }
+        } else {
+          alert(`ID must be between 1 and ${TOTAL_NFTS}`);
+        }
+      }
+    });
+    
+    document.getElementById('modal-close')?.addEventListener('click', closeModal);
+    document.getElementById('modal-backdrop')?.addEventListener('click', closeModal);
+    document.getElementById('toggle-original')?.addEventListener('click', toggleImageMode);
+    
+    // ======================== SDK INIT ========================
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange: (config) => {
+          document.getElementById('main-title').textContent = config.gallery_title || defaultConfig.gallery_title;
+          document.getElementById('subtitle').textContent = config.subtitle_text || defaultConfig.subtitle_text;
+          document.body.style.fontFamily = `${config.font_family || 'Inter'}, sans-serif`;
+        },
+        mapToCapabilities: (config) => ({
+          recolorables: [
+            { get: () => config.background_color || defaultConfig.background_color, set: (v) => { document.body.style.backgroundColor = v; }},
+            { get: () => config.accent_color || defaultConfig.accent_color, set: (v) => { document.documentElement.style.setProperty('--accent', v); }},
+            { get: () => config.surface_color || defaultConfig.surface_color, set: (v) => { }},
+            { get: () => config.text_color || defaultConfig.text_color, set: (v) => { }},
+            { get: () => config.muted_color || defaultConfig.muted_color, set: (v) => { }}
+          ],
+          fontEditable: { get: () => config.font_family || defaultConfig.font_family, set: (v) => { }},
+          fontSizeable: { get: () => config.font_size || defaultConfig.font_size, set: (v) => { }}
+        }),
+        mapToEditPanelValues: (config) => new Map([
+          ['gallery_title', config.gallery_title || defaultConfig.gallery_title],
+          ['subtitle_text', config.subtitle_text || defaultConfig.subtitle_text]
+        ])
+      });
+    }
+    
+    // ======================== INITIAL LOAD ========================
+    document.getElementById('total-pages').innerText = TOTAL_PAGES;
     renderGrid(1);
-    lucide.createIcons();
+    
+    // Lucide icons
+    setTimeout(() => {
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }, 100);
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9fb01829a63b7d0d',t:'MTc3ODY1ODg1OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
